@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class Startpage extends StatefulWidget {
   const Startpage({super.key});
@@ -57,25 +58,105 @@ class _StartpageState extends State<Startpage> {
                 SizedBox(
                   height: 20,
                 ),
-                Text(
-                  "AI-SKINWISE"
+                ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                      colors: [Color(0xFF2E7EC2), Color(0xFF50B6D0)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.topRight
+                    ).createShader(bounds);
+                  },
+                  child: Text(
+                    "AI-SKINWISE",
+                    style: GoogleFonts.rozhaOne(
+                      fontSize: 40,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                Text(
-                    "Scan, Detect, Protect"
+                ShaderMask(
+                  shaderCallback: (Rect bounds) {
+                    return LinearGradient(
+                        colors: [Color(0xFF2E7EC2), Color(0xFF50B6D0)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.topRight
+                    ).createShader(bounds);
+                  },
+                  child: Text(
+                    "Scan, Detect, Protect",
+                    style: GoogleFonts.roboto(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
                 SizedBox(
                   height: 50
                 ),
-                ElevatedButton(
-                    onPressed: (){},
-                    child: Text("Log in")
+                Container(
+                  width: 300,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2E7EC2), Color(0xFF50B6D0)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                    child: Text(
+                      "Sign in",
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
-                ElevatedButton(
-                    onPressed: (){},
-                    child: Text("Sign up")
+                SizedBox(
+                    height: 10
+                ),
+                Container(
+                  width: 300,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF2E7EC2), Color(0xFF50B6D0)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                    child: Text(
+                      "Sign up",
+                      style: GoogleFonts.roboto(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
                 ),
               ]
             )
