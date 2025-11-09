@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../Scanner Page/ScannerPage.dart';
-import '../History Page/HistoryPage.dart';
-import '../Messages Page/MessagesPage.dart';
+import '../Scanner_Page/ScannerPage.dart';
+import '../History_Page/HistoryPage.dart';
+import '../Messages_Page/MessagesPage.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -110,23 +110,23 @@ class _HomepageState extends State<Homepage> {
 
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/Home Icon.png', 'Home', 28.5, 28),
-              activeIcon: _buildActiveIcon('Icons/Home Icon.png', 'Home', 28.5, 28),
+              icon: _buildInactiveIcon('Icons/Home_Icon.png', 'Home', 20.5, 20),
+              activeIcon: _buildActiveIcon('Icons/Home_Icon.png', 'Home', 20.5, 20),
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/Scan Icon.png', 'Scanner', 27.49, 29),
-              activeIcon: _buildActiveIcon('Icons/Scan Icon.png', 'Scanner', 27.49, 29),
+              icon: _buildInactiveIcon('Icons/Scan_Icon.png', 'Scanner', 19.49, 21),
+              activeIcon: _buildActiveIcon('Icons/Scan_Icon.png', 'Scanner', 19.49, 21),
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/Message Icon.png', 'Message', 29.52, 27),
-              activeIcon: _buildActiveIcon('Icons/Message Icon.png', 'Message', 29.52, 27),
+              icon: _buildInactiveIcon('Icons/Message_Icon.png', 'Message', 21.52, 19),
+              activeIcon: _buildActiveIcon('Icons/Message_Icon.png', 'Message', 21.52, 19),
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/History Icon.png', 'History', 29.32, 28.8),
-              activeIcon: _buildActiveIcon('Icons/History Icon.png', 'History', 29.32, 28.8),
+              icon: _buildInactiveIcon('Icons/History_Icon.png', 'History', 21.32, 20.8),
+              activeIcon: _buildActiveIcon('Icons/History_Icon.png', 'History', 21.32, 20.8),
               label: '',
             ),
           ],
