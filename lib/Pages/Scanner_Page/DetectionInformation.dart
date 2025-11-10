@@ -4,10 +4,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class Detectioninformation extends StatefulWidget {
   final List<String> imagePaths;
+  final String userSymptoms;
 
   const Detectioninformation({
     super.key,
-    this.imagePaths = const [], // Default to an empty list
+    this.imagePaths = const [],
+    required this.userSymptoms,
   });
   // --- END MODIFIED ---
 
@@ -16,6 +18,7 @@ class Detectioninformation extends StatefulWidget {
 }
 
 class _DetectioninformationState extends State<Detectioninformation> {
+
   int _openPanelIndex = -1;
 
   final List<PanelItem> _panels = [
@@ -38,6 +41,7 @@ class _DetectioninformationState extends State<Detectioninformation> {
 
   @override
   Widget build(BuildContext context) {
+    print("User symptoms from scanner: ${widget.userSymptoms}");
     return Scaffold(
       appBar: AppBar(
         // --- MODIFIED ---

@@ -21,6 +21,10 @@ class _CamerascannerState extends State<Camerascanner> {
   final List<XFile> _capturedImages = [];
   final int _requiredImageCount = 3;
 
+  // --- NEW ---
+  // Controller for the symptom input dialog
+  final TextEditingController _symptomsController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -65,6 +69,7 @@ class _CamerascannerState extends State<Camerascanner> {
   @override
   void dispose() {
     _controller?.dispose();
+    _symptomsController.dispose(); // --- NEW ---
     super.dispose();
   }
 
@@ -217,10 +222,13 @@ class _CamerascannerState extends State<Camerascanner> {
     final List<String> imagePaths =
     _capturedImages.map((img) => img.path).toList();
     print(
-        "-> NAVIGATION START: Navigating with ${imagePaths.length} images...");
+        "-> NAVIGATION START: Navigating with ${imagePaths.length} images and symptoms: $symptoms");
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => Detectioninformation(imagePaths: imagePaths),
+        builder: (context) => Detectioninformation(
+          imagePaths: imagePaths,
+          userSymptoms: symptoms, // --- NEW ---
+        ),
       ),
     );
   }
@@ -241,21 +249,24 @@ class _CamerascannerState extends State<Camerascanner> {
         _capturedImages.add(image);
       });
       if (_capturedImages.length == _requiredImageCount) {
-        _navigateToDetection();
+        // --- MODIFIED ---
+        await _promptForSymptoms(); // Show dialog instead of navigating
       }
     } catch (e) {
       print("->!! CAPTURE ERROR: $e");
     } finally {
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        // Only set processing to false if we are not done yet
+        if (_capturedImages.length != _requiredImageCount) {
+          setState(() {
+            _isProcessing = false;
+          });
+        }
       }
     }
   }
 
   Future<void> _pickFromGallery() async {
-    // Add a print statement to be sure it's called
     print("-> GALLERY: _pickFromGallery() CALLED.");
     if (_isProcessing) return;
     try {
@@ -270,7 +281,7 @@ class _CamerascannerState extends State<Camerascanner> {
             const SnackBar(content: Text('No images selected.')),
           );
         }
-        return;
+        return; // --- ADDED for clarity
       }
       if (images.length != _requiredImageCount) {
         print("-> GALLERY ERROR: User picked ${images.length} images.");
@@ -281,20 +292,24 @@ class _CamerascannerState extends State<Camerascanner> {
                 Text('Please select exactly $_requiredImageCount photos.')),
           );
         }
-        return;
+        return; // --- ADDED for clarity
       }
       print("-> GALLERY SUCCESS: Picked 3 images.");
       setState(() {
         _capturedImages.addAll(images);
       });
-      _navigateToDetection();
+      // --- MODIFIED ---
+      await _promptForSymptoms(); // Show dialog instead of navigating
     } catch (e) {
-      print("->!! GALLERY ERROR: $e"); // <-- Check your debug console for this!
+      print("->!! GALLERY ERROR: $e");
     } finally {
       if (mounted) {
-        setState(() {
-          _isProcessing = false;
-        });
+        // Only set processing to false if we are not done yet
+        if (_capturedImages.length != _requiredImageCount) {
+          setState(() {
+            _isProcessing = false;
+          });
+        }
       }
     }
   }
@@ -306,6 +321,7 @@ class _CamerascannerState extends State<Camerascanner> {
 
   @override
   Widget build(BuildContext context) {
+    // ... (Your build method is unchanged)
     final Color darkBlue = const Color(0xFF1A1A2F);
     final Color lightGrey = const Color(0xFFF0F0F0);
     final Color accentBlue = const Color(0xFF007AFF);
@@ -384,42 +400,6 @@ class _CamerascannerState extends State<Camerascanner> {
               ),
             ),
           ),
-          // Positioned(
-          //   bottom: 20,
-          //   left: 20,
-          //   right: 20,
-          //   child: Container(
-          //     height: 80,
-          //     child: Row(
-          //       mainAxisAlignment: MainAxisAlignment.center,
-          //       children: List.generate(
-          //         _requiredImageCount,
-          //             (index) => Container(
-          //           width: 60,
-          //           height: 60,
-          //           margin: const EdgeInsets.symmetric(horizontal: 8),
-          //           decoration: BoxDecoration(
-          //             color: Colors.black.withOpacity(0.5),
-          //             borderRadius: BorderRadius.circular(8),
-          //             border: Border.all(color: Colors.white, width: 1),
-          //           ),
-          //           child: index < _capturedImages.length
-          //               ? ClipRRect(
-          //             borderRadius: BorderRadius.circular(8),
-          //             child: Image.file(
-          //               File(_capturedImages[index].path),
-          //               fit: BoxFit.cover,
-          //             ),
-          //           )
-          //               : Icon(
-          //             Icons.image_not_supported_outlined,
-          //             color: Colors.white60,
-          //           ),
-          //         ),
-          //       ),
-          //     ),
-          //   ),
-          // ),
         ],
       ),
       bottomNavigationBar: Container(
