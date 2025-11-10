@@ -187,14 +187,14 @@ class _CamerascannerState extends State<Camerascanner> {
         children: [
           // --- CAMERA PREVIEW ---
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 50),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 40),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16.0),
               child: FittedBox(
                 fit: BoxFit.cover,
                 child: SizedBox(
                   width: _controller!.value.previewSize!.height,
-                  height: _controller!.value.previewSize!.width - 210,
+                  height: _controller!.value.previewSize!.width,
                   child: CameraPreview(_controller!),
                 ),
               ),
@@ -202,7 +202,7 @@ class _CamerascannerState extends State<Camerascanner> {
           ),
           // --- BLUE BORDER ---
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 160),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 50),
             child: Container(
               decoration: BoxDecoration(
                 border: Border.all(
@@ -225,7 +225,7 @@ class _CamerascannerState extends State<Camerascanner> {
             ),
           ),
           Positioned(
-            bottom: 125,
+            bottom: 15,
             left: 0,
             right: 0,
             child: Text(
@@ -240,42 +240,42 @@ class _CamerascannerState extends State<Camerascanner> {
               ),
             ),
           ),
-          Positioned(
-            bottom: 30,
-            left: 20,
-            right: 20,
-            child: Container(
-              height: 80,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(
-                  _requiredImageCount,
-                      (index) => Container(
-                    width: 60,
-                    height: 60,
-                    margin: const EdgeInsets.symmetric(horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.white, width: 1),
-                    ),
-                    child: index < _capturedImages.length
-                        ? ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.file(
-                        File(_capturedImages[index].path),
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                        : Icon(
-                      Icons.image_not_supported_outlined,
-                      color: Colors.white60,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   bottom: 20,
+          //   left: 20,
+          //   right: 20,
+          //   child: Container(
+          //     height: 80,
+          //     child: Row(
+          //       mainAxisAlignment: MainAxisAlignment.center,
+          //       children: List.generate(
+          //         _requiredImageCount,
+          //             (index) => Container(
+          //           width: 60,
+          //           height: 60,
+          //           margin: const EdgeInsets.symmetric(horizontal: 8),
+          //           decoration: BoxDecoration(
+          //             color: Colors.black.withOpacity(0.5),
+          //             borderRadius: BorderRadius.circular(8),
+          //             border: Border.all(color: Colors.white, width: 1),
+          //           ),
+          //           child: index < _capturedImages.length
+          //               ? ClipRRect(
+          //             borderRadius: BorderRadius.circular(8),
+          //             child: Image.file(
+          //               File(_capturedImages[index].path),
+          //               fit: BoxFit.cover,
+          //             ),
+          //           )
+          //               : Icon(
+          //             Icons.image_not_supported_outlined,
+          //             color: Colors.white60,
+          //           ),
+          //         ),
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
       bottomNavigationBar: Container(
