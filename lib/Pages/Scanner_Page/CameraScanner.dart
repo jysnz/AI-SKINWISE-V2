@@ -68,7 +68,151 @@ class _CamerascannerState extends State<Camerascanner> {
     super.dispose();
   }
 
-  void _navigateToDetection() {
+  Widget _buildSymptomDialogContent(BuildContext dialogContext) {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(24.0),
+      decoration: BoxDecoration(
+        color: Colors.white, // Dialog background color
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.circular(16.0),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 12.0,
+            offset: Offset(0.0, 8.0),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min, // To make the dialog wrap content
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // --- Title ---
+          Text(
+            "Describe Your Symptoms",
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // --- Subtitle/Description ---
+          Text(
+            "Please list any symptoms you're experiencing (e.g., itching, redness, bumps).",
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: Colors.grey[700],
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // --- Text Field ---
+          TextField(
+            controller: _symptomsController,
+            decoration: InputDecoration(
+              labelText: "Symptoms",
+              hintText: "e.g., Itchy and red rash on my arm...",
+              // Add a prefix icon
+              icon: Icon(Icons.edit_note_rounded,
+                  color: theme.colorScheme.primary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+              ),
+              // Style the border when it's focused
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12.0),
+                borderSide: BorderSide(
+                  color: theme.colorScheme.primary,
+                  width: 2.0,
+                ),
+              ),
+            ),
+            autofocus: true,
+            maxLines: 3,
+            minLines: 1,
+            // Automatically capitalize the first letter of sentences
+            textCapitalization: TextCapitalization.sentences,
+          ),
+          const SizedBox(height: 24),
+
+          // --- Action Buttons ---
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: <Widget>[
+              // Secondary button (Skip)
+              TextButton(
+                style: TextButton.styleFrom(
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                ),
+                child: const Text(
+                  "Skip",
+                  style: TextStyle(fontSize: 16),
+                ),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(""); // Pass empty string
+                },
+              ),
+              const SizedBox(width: 8),
+
+              // Primary button (Confirm)
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12.0),
+                  ),
+                  padding:
+                  const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: const Text(
+                  "Confirm",
+                  style: TextStyle(fontSize: 16),
+                ),
+                onPressed: () {
+                  Navigator.of(dialogContext).pop(_symptomsController.text);
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _promptForSymptoms() async {
+    // Clear the controller from previous inputs
+    _symptomsController.clear();
+
+    final String? symptoms = await showDialog<String>(
+      context: context,
+      barrierDismissible: false, // User must interact
+      builder: (BuildContext dialogContext) {
+        // Using Dialog directly for more customization
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent, // We set color on the container
+          child: _buildSymptomDialogContent(dialogContext),
+        );
+      },
+    );
+
+    // After the dialog closes, navigate.
+    if (!mounted) return;
+    _navigateToDetection(symptoms ?? "");
+  }
+
+  // --- MODIFIED ---
+  // Now accepts a symptoms string to pass forward
+  void _navigateToDetection(String symptoms) {
     if (!mounted) return;
     final List<String> imagePaths =
     _capturedImages.map((img) => img.path).toList();
