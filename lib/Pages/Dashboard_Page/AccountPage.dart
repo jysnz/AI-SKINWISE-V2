@@ -16,13 +16,13 @@ class AccountPage extends StatelessWidget {
           child: Row(
             children: const [
               SizedBox(width: 15),
-              Icon(Icons.arrow_back, color: Colors.black, size: 28.0),
+              Icon(Icons.arrow_back, color: Colors.black, size: 24.0),
               SizedBox(width: 10),
               Text(
                 'Back',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 23,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -42,7 +42,7 @@ class AccountPage extends StatelessWidget {
                 'Log out',
                 style: TextStyle(
                   color: Colors.red,
-                  fontSize: 23,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),

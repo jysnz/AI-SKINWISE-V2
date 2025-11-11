@@ -1,7 +1,8 @@
 // File: dashboard/DashboardContent.dart
 
 import 'package:flutter/material.dart';
-import 'AccountPage.dart'; // Import the account page for navigation
+import 'AccountPage.dart';
+import 'DiseaseDetailPage.dart';
 
 class DashboardContent extends StatefulWidget {
   DashboardContent({Key? key}) : super(key: key);
@@ -364,7 +365,18 @@ class DiseaseCard extends StatelessWidget {
               ),
             ),
             TextButton(
-              onPressed: () { /* TODO: Implement View more logic */ },
+              // --- 2. UPDATE THIS onPressed FUNCTION ---
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DiseaseDetailPage(
+                      name: name,
+                      rarity: rarity,
+                    ),
+                  ),
+                );
+              },
               child: const Text(
                 'View more',
                 style: TextStyle(color: Color(0xFF005DA1)),
