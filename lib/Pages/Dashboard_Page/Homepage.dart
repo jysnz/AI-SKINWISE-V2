@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../Scanner_Page/ScannerPage.dart';
 import '../History_Page/HistoryPage.dart';
 import '../Messages_Page/MessagesPage.dart';
+import 'DashboardContent.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -14,13 +15,11 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Center(
-      child: Text("This is the homepage"),
-    ),
-    Scannerpage(),
-    Messagespage(),
-    Historypage(),
+  static List<Widget> _widgetOptions = <Widget>[
+    DashboardContent(), // <-- CHANGE THIS LINE
+    const Scannerpage(),
+    const Messagespage(),
+    const Historypage(),
   ];
 
   void _onItemTapped(int index) {
