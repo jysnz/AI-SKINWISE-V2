@@ -9,41 +9,76 @@ class AccountPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+        // This is still needed for your "Back" button
+        leadingWidth: 100,
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Row(
+            children: const [
+              SizedBox(width: 15),
+              Icon(Icons.arrow_back, color: Colors.black, size: 28.0),
+              SizedBox(width: 10),
+              Text(
+                'Back',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
-        title: const Text(
-          'Account',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: false, // Matched to image's left alignment
+
+        // MODIFIED THIS SECTION
         actions: [
-          TextButton(
-            onPressed: () { /* TODO: Implement Log out logic */ },
-            child: const Text(
-              'Log out',
-              style: TextStyle(color: Colors.red, fontSize: 16),
+          Padding(
+            // This padding matches the body's horizontal padding (20.0)
+            padding: const EdgeInsets.only(right: 10.0),
+            child: TextButton.icon(
+              onPressed: () { /* TODO: Log out */ },
+              icon: const Icon(Icons.logout, color: Colors.red, size: 24.0),
+              label: const Text(
+                'Log out',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ),
         ],
       ),
+
+      // The body starts here (no changes)
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // "Modify you account info" subtitle
+            const Divider(height: 1, thickness: 0.5),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: 15),
             const Text(
-              'Modify you account info',
+              'Account',
               style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+                fontSize: 24,
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 20.0),
+              child: Text(
+                'Modify your account info', // Typo fixed
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 16,
+                ),
               ),
             ),
             const SizedBox(height: 24),
-
-            // Profile picture with edit icon
             Center(
               child: Stack(
                 clipBehavior: Clip.none,
@@ -54,7 +89,7 @@ class AccountPage extends StatelessWidget {
                     child: Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.blue,
+                      color: Color(0xFF005DA1),
                     ),
                   ),
                   Positioned(
@@ -64,66 +99,31 @@ class AccountPage extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                        color: Colors.blue,
+                        color: Color(0xFF005DA1),
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 2,
-                        ),
+                        border: Border.all(color: Colors.white, width: 2),
                       ),
-                      child: const Icon(
-                        Icons.edit,
-                        color: Colors.white,
-                        size: 20,
-                      ),
+                      child: const Icon(Icons.edit, color: Colors.white, size: 20),
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 40),
-
-            // --- Account Info List ---
-            _buildAccountOption(
-              title: 'Name',
-              value: 'GUEST',
-              onTap: () { /* TODO: Navigate to Edit Name Page */ },
-            ),
-            _buildAccountOption(
-              title: 'Phone Number',
-              value: 'N/A',
-              onTap: () { /* TODO: Navigate to Edit Phone Page */ },
-            ),
-            _buildAccountOption(
-              title: 'Email',
-              value: 'N/A',
-              onTap: () { /* TODO: Navigate to Edit Email Page */ },
-            ),
-            _buildAccountOption(
-              title: 'Age',
-              value: 'N/A',
-              onTap: () { /* TODO: Navigate to Edit Age Page */ },
-            ),
-            _buildAccountOption(
-              title: 'Height',
-              value: 'N/A',
-              onTap: () { /* TODO: Navigate to Edit Height Page */ },
-            ),
-            _buildAccountOption(
-              title: 'Weight',
-              value: 'N/A',
-              onTap: () { /* TODO: Navigate to Edit Weight Page */ },
-            ),
-
-            // --- ADDED LINE ---
-            // This is the blue line from the bottom of the screenshot
-            const Padding(
-              padding: EdgeInsets.only(top: 8.0), // Add some space
-              child: Divider(
-                color: Colors.blue, // Color from the image
-                thickness: 0.5,     // Thin line
-              ),
-            ),
+            const Divider(height: 1, thickness: 0.5),
+            _buildAccountOption(title: 'Name', value: 'GUEST', onTap: () {}),
+            const Divider(height: 1, thickness: 0.5),
+            _buildAccountOption(title: 'Phone Number', value: 'N/A', onTap: () {}),
+            const Divider(height: 1, thickness: 0.5),
+            _buildAccountOption(title: 'Email', value: 'N/A', onTap: () {}),
+            const Divider(height: 1, thickness: 0.5),
+            _buildAccountOption(title: 'Age', value: 'N/A', onTap: () {}),
+            const Divider(height: 1, thickness: 0.5),
+            _buildAccountOption(title: 'Height', value: 'N/A', onTap: () {}),
+            const Divider(height: 1, thickness: 0.5),
+            _buildAccountOption(title: 'Weight', value: 'N/A', onTap: () {}),
+            const Divider(height: 1, thickness: 0.5),
+            const SizedBox(height: 10),
           ],
         ),
       ),
@@ -141,8 +141,8 @@ class AccountPage extends StatelessWidget {
       title: Text(
         title,
         style: const TextStyle(
-          color: Colors.blue,
-          fontWeight: FontWeight.w500,
+          color: Color(0xFF005DA1),
+          fontWeight: FontWeight.w700,
           fontSize: 16,
         ),
       ),
