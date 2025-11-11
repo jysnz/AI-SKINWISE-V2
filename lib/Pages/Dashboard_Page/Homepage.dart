@@ -1,7 +1,8 @@
+import 'package:ai_skinwise_v2/Pages/Dashboard_Page/test.dart';
+import 'package:ai_skinwise_v2/Pages/History_Page/HistoryInterface.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../Scanner_Page/ScannerPage.dart';
-import '../History_Page/HistoryPage.dart';
 import '../Messages_Page/MessagesPage.dart';
 
 class Homepage extends StatefulWidget {
@@ -14,13 +15,11 @@ class Homepage extends StatefulWidget {
 class _HomepageState extends State<Homepage> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Center(
-      child: Text("This is the homepage"),
-    ),
-    Scannerpage(),
-    Messagespage(),
-    Historypage(),
+  static List<Widget> _widgetOptions = <Widget>[
+    const Test(),
+    const Scannerpage(),
+    const Messagespage(),
+    const Historyinterface()
   ];
 
   void _onItemTapped(int index) {

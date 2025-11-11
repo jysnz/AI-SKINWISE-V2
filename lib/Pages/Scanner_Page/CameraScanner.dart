@@ -190,6 +190,8 @@ class _CamerascannerState extends State<Camerascanner> {
     );
   }
 
+  // --- NEW ---
+  // This function shows the dialog and then navigates
   Future<void> _promptForSymptoms() async {
     // Clear the controller from previous inputs
     _symptomsController.clear();

@@ -1,3 +1,13 @@
+import 'package:ai_skinwise_v2/Pages/History_Page/Archive.dart';
+import 'package:ai_skinwise_v2/Pages/History_Page/HistoryInterface.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Code.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/CreateAccount.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Login.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Reqpass.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Update.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/personalinfo.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/verify.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Fillupemail.dart';
 import 'package:flutter/material.dart';
 // Import your pages from their new locations
 import 'Pages/Dashboard_Page/Homepage.dart';
@@ -47,7 +57,6 @@ class MyApp extends StatelessWidget {
       // We can also define routes for navigation
       routes: {
         '/scanner': (context) => const Camerascanner(),
-        '/home': (context) => const Homepage(),
       },
     );
   }
