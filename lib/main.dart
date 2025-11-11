@@ -4,6 +4,8 @@ import 'Pages/Dashboard_Page/Homepage.dart';
 import 'Pages/Scanner_Page/DetectionInformation.dart';
 import 'Pages/Scanner_Page/CameraScanner.dart';
 
+//Edit in supabase branch
+
 void main() {
   runApp(const MyApp());
 }
