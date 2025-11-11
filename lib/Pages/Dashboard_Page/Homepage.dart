@@ -1,9 +1,9 @@
-import 'package:ai_skinwise_v2/Pages/Dashboard_Page/test.dart';
 import 'package:ai_skinwise_v2/Pages/History_Page/HistoryInterface.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../Scanner_Page/ScannerPage.dart';
 import '../Messages_Page/MessagesPage.dart';
+import 'DashboardContent.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -16,10 +16,10 @@ class _HomepageState extends State<Homepage> {
   int _selectedIndex = 0;
 
   static List<Widget> _widgetOptions = <Widget>[
-    const Test(),
+    DashboardContent(),
     const Scannerpage(),
     const Messagespage(),
-    const Historyinterface()
+    const Historyinterface(),
   ];
 
   void _onItemTapped(int index) {
