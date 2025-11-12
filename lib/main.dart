@@ -13,9 +13,14 @@ import 'package:flutter/material.dart';
 import 'Pages/Dashboard_Page/Homepage.dart';
 import 'Pages/Scanner_Page/DetectionInformation.dart';
 import 'Pages/Scanner_Page/CameraScanner.dart';
+import 'Supabase/supabase_config.dart';
+import 'Supabase/user_data_service.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeSupabase();
   runApp(const MyApp());
+  fetchUserDataAndPrintToConsole();
 }
 
 class MyApp extends StatelessWidget {
