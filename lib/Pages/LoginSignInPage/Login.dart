@@ -163,7 +163,7 @@ class _LoginState extends State<Login> {
                       ),
                     );
                   },
-                  child: const Text('Forgot Password'),
+                  child: const Text('Forgot Password?'),
                 ),
               ),
               const SizedBox(height: 20),
