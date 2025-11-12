@@ -1,5 +1,6 @@
 // I changed this from cupertino.dart to material.dart
 // because the UI uses Material Design components.
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/personalinfo.dart';
 import 'package:flutter/material.dart';
 
 class Createaccount extends StatefulWidget {
@@ -90,6 +91,11 @@ class _CreateaccountState extends State<Createaccount> {
       // If any field is invalid, the validator messages will show.
       print('Form is invalid.');
     }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+          builder: (context) => const personalinfo()
+      ),
+    );
   }
 
   @override

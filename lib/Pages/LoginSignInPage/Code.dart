@@ -1,6 +1,7 @@
 // I changed this from cupertino.dart to material.dart
 // because the UI uses Material Design components.
 import 'dart:async'; // Import this for the Timer
+import 'package:ai_skinwise_v2/Pages/Dashboard_Page/Homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // For TextInputFormatter
 
@@ -127,6 +128,14 @@ class _CodeState extends State<Code> {
     } else {
       // TODO: Show an error if the code is not complete
       print('Code is incomplete.');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Code is incomplete.')),
+      );
+      Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) => const Homepage()
+        ),
+      );
     }
   }
 

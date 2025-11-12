@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart'; // Changed from cupertino.dart
+import 'package:flutter/material.dart';
+
+import 'Login.dart'; // Changed from cupertino.dart
 
 // CLASS NAME FIXED: Renamed to UpperCamelCase 'Update'
 class Update extends StatefulWidget {
@@ -32,6 +34,11 @@ class _UpdateState extends State<Update> {
       // Check if the password field is empty
       if (_newPasswordController.text.isEmpty) {
         _showPasswordError = true;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+              builder: (context) => const Login()
+          ),
+        );
       } else {
         _showPasswordError = false;
       }

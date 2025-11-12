@@ -58,7 +58,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // The home is now the Detectioninformation page
-      home: const Homepage(),
+      home: const Login(),
       // We can also define routes for navigation
       routes: {
         '/scanner': (context) => const Camerascanner(),

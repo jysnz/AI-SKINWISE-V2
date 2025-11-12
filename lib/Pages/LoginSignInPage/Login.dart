@@ -1,9 +1,13 @@
 // I changed this from cupertino.dart to material.dart
 // because the UI uses Material Design components.
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/CreateAccount.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Fillupemail.dart';
 import 'package:flutter/material.dart';
 
 // Added this import for the Google Sign-In logic
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../Dashboard_Page/Homepage.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -68,7 +72,7 @@ class _LoginState extends State<Login> {
             // Aligns all children to the start (left)
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
 
               // "Welcome Back!" Text
               const Text(
@@ -153,7 +157,11 @@ class _LoginState extends State<Login> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
-                    // TODO: Handle "Forgot Password"
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                          builder: (context) => const Fillupemail()
+                      ),
+                    );
                   },
                   child: const Text('Forgot Password'),
                 ),
@@ -163,7 +171,11 @@ class _LoginState extends State<Login> {
               // Log in Button
               ElevatedButton(
                 onPressed: () {
-                  // TODO: Handle standard email/password login
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => const Homepage()
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF007AFF), // Blue color
@@ -187,7 +199,12 @@ class _LoginState extends State<Login> {
                   const Text("Don't have an account yet?"),
                   TextButton(
                     onPressed: () {
-                      // TODO: Navigate to Sign Up page
+                      // YOU NEED TO DO THIS:
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                            builder: (context) => const Createaccount()
+                        ),
+                      );
                     },
                     child: const Text('Sign Up'),
                   ),
@@ -241,7 +258,11 @@ class _LoginState extends State<Login> {
               // Login as Guest Button
               ElevatedButton(
                 onPressed: () {
-                  // TODO: Handle "Login as Guest"
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                        builder: (context) => const Homepage()
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor:

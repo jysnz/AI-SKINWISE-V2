@@ -1,6 +1,10 @@
 // I changed this from cupertino.dart to material.dart
 // because the UI uses Material Design components.
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/verify.dart';
 import 'package:flutter/material.dart';
+// --- NEW IMPORTS ---
+import 'package:image_picker/image_picker.dart';
+import 'dart:io'; // Required for handling the File
 
 class personalinfo extends StatefulWidget {
   const personalinfo({super.key});
@@ -20,6 +24,10 @@ class _personalinfoState extends State<personalinfo> {
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
 
+  // --- NEW STATE VARIABLE ---
+  // This will hold the path to the selected image file
+  File? _profileImage;
+
   // Clean up the controllers when the widget is removed
   @override
   void dispose() {
@@ -29,6 +37,24 @@ class _personalinfoState extends State<personalinfo> {
     _heightController.dispose();
     _weightController.dispose();
     super.dispose();
+  }
+
+  // --- NEW FUNCTION ---
+  // This function handles picking an image from the gallery
+  Future<void> _pickImage() async {
+    final ImagePicker picker = ImagePicker();
+    // Open the gallery to pick an image
+    final XFile? pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      // If an image is selected, update the state to display it
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    } else {
+      // User canceled the picker
+      print('No image selected.');
+    }
   }
 
   // Helper function to build the text field labels
@@ -85,7 +111,18 @@ class _personalinfoState extends State<personalinfo> {
       print('Age: ${_ageController.text}');
       print('Height: ${_heightController.text}');
       print('Weight: ${_weightController.text}');
-      // TODO: Add navigation to the app's home screen
+      // --- NEW ---
+      // You can now also access the selected image path
+      if (_profileImage != null) {
+        print('Profile Image Path: ${_profileImage!.path}');
+        // TODO: Add logic to upload this image file
+      } else {
+        print('No profile image selected.');
+      }
+
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const verify()),
+      );
     } else {
       // If any field is invalid, the validator messages will show.
       print('Form is invalid.');
@@ -104,14 +141,6 @@ class _personalinfoState extends State<personalinfo> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-        ),
-        // This adds the blue line at the bottom of the app bar
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(1.0),
-          child: Container(
-            color: Colors.blue.withOpacity(0.5),
-            height: 1.0,
-          ),
         ),
       ),
       backgroundColor: Colors.white,
@@ -159,19 +188,30 @@ class _personalinfoState extends State<personalinfo> {
                 const Divider(height: 20),
                 const SizedBox(height: 30),
 
-                // --- Profile Picture Icon ---
+                // --- UPDATED Profile Picture Icon ---
                 Center(
                   child: Stack(
                     clipBehavior: Clip.none, // Allow edit icon to go outside
                     children: [
+                      // This CircleAvatar now displays the image
                       CircleAvatar(
                         radius: 60,
-                        backgroundColor: Colors.grey[200],
-                        child: Icon(
+                        // Use FileImage if _profileImage is not null
+                        backgroundImage: _profileImage != null
+                            ? FileImage(_profileImage!)
+                            : null,
+                        // Show grey background only if no image is selected
+                        backgroundColor: _profileImage == null
+                            ? Colors.grey[200]
+                            : Colors.transparent,
+                        // Show Icon only if no image is selected
+                        child: _profileImage == null
+                            ? Icon(
                           Icons.person,
                           size: 70,
                           color: Colors.grey[600],
-                        ),
+                        )
+                            : null, // No child when image is displayed
                       ),
                       Positioned(
                         bottom: 0,
@@ -188,9 +228,9 @@ class _personalinfoState extends State<personalinfo> {
                                 color: Colors.white,
                                 size: 20,
                               ),
-                              onPressed: () {
-                                // TODO: Handle profile picture change
-                              },
+                              // --- UPDATED ---
+                              // Call our new function on press
+                              onPressed: _pickImage,
                             ),
                           ),
                         ),

@@ -1,5 +1,7 @@
 // I changed this from cupertino.dart to material.dart
 // because the UI uses Material Design components.
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Code.dart';
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Fillupemail.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
@@ -67,7 +69,11 @@ class _verifyState extends State<verify> {
             // "Send Verification Code" Button
             ElevatedButton(
               onPressed: () {
-                // TODO: Add logic to send verification code
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                      builder: (context) => const Code()
+                  ),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF007AFF), // Blue color

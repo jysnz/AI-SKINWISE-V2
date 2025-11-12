@@ -1,141 +1,162 @@
-import 'package:flutter/material.dart'; // Changed from cupertino.dart
-import 'package:pinput/pinput.dart'; // Required for the code field
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Code.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
-// CLASS NAME FIXED: Renamed to UpperCamelCase 'Cntdwncode'
-class Cntdwncode extends StatefulWidget {
-  const Cntdwncode({super.key});
+import 'Cntdwncode.dart';
+
+class Fillupemail extends StatefulWidget {
+  const Fillupemail({super.key});
 
   @override
-  State<Cntdwncode> createState() => _CntdwncodeState();
+  State<Fillupemail> createState() => _FillupemailState();
 }
 
-class _CntdwncodeState extends State<Cntdwncode> {
-  // Controller to manage the text in the code field
-  final _pinController = TextEditingController();
+class _FillupemailState extends State<Fillupemail> {
+  // A GlobalKey for the Form, used for validation
+  final _formKey = GlobalKey<FormState>();
 
+  // A controller to read the text from the email field
+  final _emailController = TextEditingController();
+
+  // Clean up the controller when the widget is removed
   @override
   void dispose() {
-    // Clean up the controller when the widget is removed
-    _pinController.dispose();
+    _emailController.dispose();
     super.dispose();
+  }
+
+  // Function to handle the "Send Code" button press
+  void _sendCode() {
+    // This triggers the validator function in the TextFormField
+    if (_formKey.currentState?.validate() ?? false) {
+      // If the field is valid, proceed.
+      print('Form is valid!');
+      print('Sending code to: ${_emailController.text}');
+
+      // TODO: Add your logic to send the email (e.g., Firebase Auth)
+      // TODO: Navigate to the "Enter Code" page
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const Cntdwncode(),
+        ),
+      );
+    } else {
+      // If the field is invalid, the validator message will show.
+      print('Form is invalid.');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Theme for the pinput field (the dashes)
-    final defaultPinTheme = PinTheme(
-      width: 45,
-      height: 50,
-      textStyle: TextStyle(
-        fontSize: 22,
-        color: Colors.black,
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(width: 2, color: Colors.grey.shade400)),
-      ),
-    );
-
     return Scaffold(
-      backgroundColor: Colors.white,
-      // 1. AppBar with just the back arrow
       appBar: AppBar(
+        // Set AppBar background to white to match the body
         backgroundColor: Colors.white,
+        // Remove shadow
         elevation: 0,
-        // This ensures the back arrow is black
-        iconTheme: IconThemeData(color: Colors.black),
+        // Add the back button
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            // Standard way to go back to the previous screen
+            Navigator.of(context).pop();
+          },
+        ),
       ),
-      // 2. Body with padding
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 3. "Enter Code" Title
-            const Text(
-              'Enter Code',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 8),
+      // Set background color to white
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          // We use a Form widget to get validation features
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
 
-            // 4. "Code sent to..." Subtitle
-            Text(
-              'Code sent to Example@gmail.com',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 5. "You'll be able..." subtitle
-            const Text(
-              "You'll be able to use the code within 5 minutes",
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 6. Timer (static text)
-            Center(
-              child: Text(
-                '5:00', // Static text, no timer logic
-                style: TextStyle(
-                  fontSize: 44,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 7. Pinput (OTP) field (centered)
-            Center(
-              child: Pinput(
-                controller: _pinController,
-                length: 6, // 6 digits
-                defaultPinTheme: defaultPinTheme,
-                focusedPinTheme: defaultPinTheme.copyDecorationWith(
-                  border: Border(bottom: BorderSide(width: 2, color: Color(0xFF1877F2))),
-                ),
-                onCompleted: (pin) {
-                  // UI only, no logic
-                },
-              ),
-            ),
-            const SizedBox(height: 32),
-
-            // 8. "Submit Code" Button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // UI only, no logic
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF1877F2),
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8.0),
+                // "Enter Email" Title
+                const Text(
+                  'Enter Email',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-                child: const Text(
-                  'Submit Code',
+                const SizedBox(height: 8),
+
+                // "Your email to receive the code" Subtitle
+                Text(
+                  'Your email to receive the code',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: Colors.grey[600],
                   ),
                 ),
-              ),
+                const SizedBox(height: 40),
+
+                // "Email" Label
+                const Text(
+                  'Email',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                // --- Email Text Form Field ---
+                TextFormField(
+                  controller: _emailController,
+                  // Use emailAddress keyboard type for convenience
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: 'Your Email',
+                    filled: true,
+                    fillColor: Colors.grey[100],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  ),
+                  // Validator function
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'This field cannot be empty';
+                    }
+                    // Simple email validation: checks for '@' and '.'
+                    if (!value.contains('@') || !value.contains('.')) {
+                      return 'Please enter a valid email address';
+                    }
+                    return null; // Return null if the input is valid
+                  },
+                ),
+                const SizedBox(height: 30),
+
+                // "Send Code" Button
+                ElevatedButton(
+                  onPressed: _sendCode,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF007AFF), // Blue color
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Send Code',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
