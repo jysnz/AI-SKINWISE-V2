@@ -1,93 +1,54 @@
 import 'package:flutter/material.dart';
 
-// Main function to run the app
-void main() {
-  runApp(const MyApp());
-}
-
-// MyApp to set up the Material theme
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+// Ang class name ay "Archive"
+class Historyinterface extends StatefulWidget {
+  const Historyinterface({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'History UI',
-      theme: ThemeData(
-        // Define a primary color so the TabBar indicator can use it
-        primarySwatch: Colors.blue,
-        // Set the primary color scheme
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF007BFF), // A strong blue
-          primary: const Color(0xFF007BFF),
-        ),
-        scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Inter', // A clean, modern font
-      ),
-      home: const HistoryInterface(), // Start with HistoryInterface
-      debugShowCheckedModeBanner: false,
-    );
-  }
+  State<Historyinterface> createState() => _HistoryinterfaceState();
 }
 
-// --- Ito na yung HistoryInterface ---
-// Ginagamit ang structure ng "Archive" pero kamukha ng image mo.
+// ===== ITO ANG FIX (with TickerProviderStateMixin) =====
+class _HistoryinterfaceState extends State<Historyinterface> with TickerProviderStateMixin {
+  // Para sa state ng custom bottom nav
+  int _navIndex = 3; // 3 = History (para ma-highlight)
 
-class HistoryInterface extends StatefulWidget {
-  const HistoryInterface({super.key});
-
-  @override
-  State<HistoryInterface> createState() => _HistoryInterfaceState();
-}
-
-// Ginagamit ang TickerProviderStateMixin para sa TabController
-class _HistoryInterfaceState extends State<HistoryInterface>
-    with TickerProviderStateMixin {
-  // Helper widget para sa list items (kinopya sa Archive example mo)
-  // In-adjust ko lang yung colors para tumugma sa image
+  // Helper widget to build the list items
   Widget _buildHistoryItem({
     required String title,
     required String subtitle,
     required String date,
     bool isHighlighted = false,
   }) {
-    // This logic creates the visual style from your image
-    final Color backgroundColor =
-    isHighlighted ? const Color(0xFFE0F7FA) : const Color(0xFFF0F0F0); // Light grey
-    final Border? border = isHighlighted
-        ? Border.all(color: const Color(0xFF007BFF), width: 1.5)
-        : null;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 12.0),
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: isHighlighted ? Color(0xFFE0F7FA) : Colors.grey[200],
         borderRadius: BorderRadius.circular(12.0),
-        border: border,
+        border: isHighlighted
+            ? Border.all(color: Color(0xFF007BFF), width: 1.5)
+            : null,
       ),
       child: Row(
         children: [
-          // The blue square
           Container(
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              // Gamit ang primary blue color
-              color: const Color(0xFF007BFF),
+              color: Color(0xFF1877F2),
               borderRadius: BorderRadius.circular(8.0),
             ),
           ),
           const SizedBox(width: 16),
-          // Column para sa text
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600, // Semi-bold
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                   color: Colors.black,
                 ),
               ),
@@ -103,7 +64,7 @@ class _HistoryInterfaceState extends State<HistoryInterface>
               Text(
                 date,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: Colors.grey[500],
                 ),
               ),
@@ -114,9 +75,54 @@ class _HistoryInterfaceState extends State<HistoryInterface>
     );
   }
 
+  // ===== ITO ANG CUSTOM WIDGET PARA SA NAV BAR =====
+  Widget _buildNavItem(
+      IconData icon, String label, int index, Color primaryColor) {
+    final bool isSelected = (_navIndex == index);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          setState(() {
+            _navIndex = index;
+            // TODO: Add navigation logic here
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          decoration: isSelected
+              ? BoxDecoration(
+            color: primaryColor,
+            borderRadius: BorderRadius.circular(12.0),
+          )
+              : BoxDecoration(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected ? Colors.white : Colors.grey[600],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.white : Colors.grey[600],
+                  fontSize: 12,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+  // ====================================================
+
   @override
   Widget build(BuildContext context) {
     // Kinukuha natin yung primary color galing sa theme
+    // Siguraduhin na ang primary color sa main.dart theme ay tama
     final primaryColor = Theme.of(context).colorScheme.primary;
 
     return DefaultTabController(
@@ -124,44 +130,37 @@ class _HistoryInterfaceState extends State<HistoryInterface>
       initialIndex: 0, // Naka-set sa "History" tab
       child: Scaffold(
         backgroundColor: Colors.white,
-        // 1. AppBar (kamukha ng navigation bar sa image)
+        // 1. AppBar
         appBar: AppBar(
           backgroundColor: Colors.white,
-          elevation: 0, // Walang shadow
-          // Back button
+          elevation: 0,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black),
-            onPressed: () {
-              // Add navigation logic here, e.g.,
-              // if (Navigator.canPop(context)) {
-              //   Navigator.of(context).pop();
-              // }
-            },
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         // 2. Body
         body: Column(
           children: [
             // 3. The TabBar (History / Archived)
-            // Ito yung custom styling para magmukhang SegmentedControl
             Container(
-              height: 40, // Height ng tabs
-              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              height: 50,
+              margin: EdgeInsets.symmetric(horizontal: 15.0),
               decoration: BoxDecoration(
-                color: Colors.white, // White background for the whole bar
+                color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(8.0),
-                border: Border.all(color: primaryColor, width: 1.0),
               ),
               child: TabBar(
+                indicatorPadding: EdgeInsets.symmetric(horizontal: -80, vertical: 4.0),
                 // ===== ITO YUNG NAG-AAAYOS NG KULAY SA TAB =====
                 indicator: BoxDecoration(
-                  color: primaryColor, // Solid blue background for selected
-                  borderRadius: BorderRadius.circular(7.0),
+                  color: primaryColor, // Solid blue background
+                  borderRadius: BorderRadius.circular(8.0),
                 ),
                 // ===============================================
-                labelColor: Colors.white, // Text color pag selected
-                unselectedLabelColor: Colors.black, // Text color pag NOT selected
-                tabs: const [
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.black,
+                tabs: [
                   Tab(text: 'History'),
                   Tab(text: 'Archived'),
                 ],
@@ -178,11 +177,10 @@ class _HistoryInterfaceState extends State<HistoryInterface>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // "Saved" at "Rarity" Row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
+                            Text(
                               'Saved',
                               style: TextStyle(
                                 fontSize: 22,
@@ -191,28 +189,23 @@ class _HistoryInterfaceState extends State<HistoryInterface>
                               ),
                             ),
                             TextButton.icon(
-                              onPressed: () {
-                                // Rarity filter logic
-                              },
-                              icon: const Text(
+                              onPressed: () {},
+                              icon: Text(
                                 'Rarity',
-                                style: TextStyle(color: Colors.orange, fontSize: 14),
+                                style: TextStyle(color: Colors.orange),
                               ),
-                              label: const Icon(
+                              label: Icon(
                                 Icons.arrow_drop_down,
                                 color: Colors.orange,
-                                size: 20,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 16),
-                        // List ng items
                         Expanded(
                           child: SingleChildScrollView(
                             child: Column(
                               children: [
-                                // Naka-highlight yung una, base sa "Archive" code mo
                                 _buildHistoryItem(
                                   title: 'Acne',
                                   subtitle: 'Common',
@@ -229,12 +222,10 @@ class _HistoryInterfaceState extends State<HistoryInterface>
                                   subtitle: 'Common',
                                   date: 'September 10, 2025',
                                 ),
-                                // Naka-highlight din yung huli, base sa bago mong image
                                 _buildHistoryItem(
                                   title: 'Acne',
                                   subtitle: 'Common',
                                   date: 'September 10, 2025',
-                                  isHighlighted: true, // Pwede mo 'to palitan
                                 ),
                               ],
                             ),
@@ -245,7 +236,7 @@ class _HistoryInterfaceState extends State<HistoryInterface>
                   ),
 
                   // *** ARCHIVED TAB CONTENT ***
-                  const Center(
+                  Center(
                     child: Text('Archived items will appear here'),
                   ),
                 ],
@@ -253,6 +244,7 @@ class _HistoryInterfaceState extends State<HistoryInterface>
             ),
           ],
         ),
+
       ),
     );
   }
