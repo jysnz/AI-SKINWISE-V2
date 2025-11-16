@@ -2,6 +2,8 @@
 // because the UI uses Material Design components.
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/personalinfo.dart';
 import 'package:flutter/material.dart';
+// --- ADD THIS IMPORT ---
+import 'package:flutter/services.dart';
 
 class Createaccount extends StatefulWidget {
   const Createaccount({super.key});
@@ -27,11 +29,39 @@ class _CreateaccountState extends State<Createaccount> {
   // This variable will hold the selected country code
   String _selectedCountryCode = '+63';
 
+  // --- State variables for password requirements ---
+  bool _isLengthValid = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasNumber = false;
+  bool _hasSpecialCharacter = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Add listener to password controller
+    _passwordController.addListener(_validatePassword);
+  }
+
+  // --- Function to check password requirements ---
+  void _validatePassword() {
+    final password = _passwordController.text;
+    setState(() {
+      _isLengthValid = password.length >= 8;
+      _hasUppercase = password.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = password.contains(RegExp(r'[a-z]'));
+      _hasNumber = password.contains(RegExp(r'[0-9]'));
+      _hasSpecialCharacter =
+          password.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+    });
+  }
+
   // Clean up the controllers when the widget is removed
   @override
   void dispose() {
     _emailController.dispose();
     _phoneController.dispose();
+    _passwordController.removeListener(_validatePassword); // Remove listener
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
@@ -78,29 +108,51 @@ class _CreateaccountState extends State<Createaccount> {
     );
   }
 
-  // Function to handle the "Next" button press
+  // --- Helper widget for password requirement UI ---
+  Widget _buildRequirementRow(String text, bool met) {
+    return Row(
+      children: [
+        Icon(
+          met ? Icons.check_circle : Icons.circle_outlined,
+          color: met ? Colors.green : Colors.grey,
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            color: met ? Colors.black87 : Colors.grey[700],
+            fontSize: 14,
+            fontWeight: met ? FontWeight.bold : FontWeight.normal,
+          ),
+        ),
+      ],
+    );
+  }
+
   void _onNextPressed() {
-    // This triggers the validator functions in each TextFormField
+    // 1. Check Validation FIRST
     if (_formKey.currentState?.validate() ?? false) {
-      // If all fields are valid, proceed.
-      print('Form is valid!');
-      print('Email: ${_emailController.text}');
-      print('Phone: ${_phoneController.text}');
-      // TODO: Add navigation to the next part of the sign-up process
+      String fullPhoneNumber =
+          '$_selectedCountryCode${_phoneController.text.trim()}';
+      print('Form is valid! Passing data...');
+
+      // 3. Navigate and PASS DATA
+      Navigator.of(context).push(
+        MaterialPageRoute(
+            builder: (context) => personalinfo(
+              email: _emailController.text.trim(),
+              phone: fullPhoneNumber,
+              password: _passwordController.text,
+            )),
+      );
     } else {
-      // If any field is invalid, the validator messages will show.
       print('Form is invalid.');
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(
-          builder: (context) => const personalinfo()
-      ),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Replaced const Placeholder() with the Scaffold for your UI
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -116,15 +168,14 @@ class _CreateaccountState extends State<Createaccount> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          // We use a Form widget to get validation features
           child: Form(
             key: _formKey,
+            // autovalidateMode has been removed
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 20),
 
-                // "Create your account" Title
                 const Text(
                   'Create your account',
                   style: TextStyle(
@@ -135,7 +186,6 @@ class _CreateaccountState extends State<Createaccount> {
                 ),
                 const SizedBox(height: 8),
 
-                // "Fill all the information..." Subtitle
                 Text(
                   'Fill all the information below',
                   style: TextStyle(
@@ -145,7 +195,6 @@ class _CreateaccountState extends State<Createaccount> {
                 ),
                 const SizedBox(height: 30),
 
-                // "Account Information" Section Title
                 const Text(
                   'Account Information',
                   style: TextStyle(
@@ -174,18 +223,19 @@ class _CreateaccountState extends State<Createaccount> {
                     return null;
                   },
                 ),
-                const SizedBox(height: 20),
+                // --- FIX: Reduced spacing ---
+                const SizedBox(height: 16), // Was 20
 
                 // Phone Number Field
                 _buildLabel('Phone Number'),
                 const SizedBox(height: 8),
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Country Code Dropdown
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 15),
+                          horizontal: 12, vertical: 15), // Target padding
                       decoration: BoxDecoration(
                         color: Colors.grey[100],
                         borderRadius: BorderRadius.circular(12),
@@ -193,6 +243,7 @@ class _CreateaccountState extends State<Createaccount> {
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
                           value: _selectedCountryCode,
+                          isDense: true, // For alignment
                           items: <String>['+63', '+1', '+44', '+91']
                               .map((String value) {
                             return DropdownMenuItem<String>(
@@ -215,10 +266,25 @@ class _CreateaccountState extends State<Createaccount> {
                     const SizedBox(width: 12),
                     // Phone Number Input
                     Expanded(
-                      child: _buildTextFormField(
+                      child: TextFormField(
                         controller: _phoneController,
-                        hintText: 'Phone Number',
                         keyboardType: TextInputType.phone,
+                        // --- FIX: ADDED INPUT FORMATTER ---
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly
+                        ],
+                        decoration: InputDecoration(
+                          hintText: 'Phone Number',
+                          filled: true,
+                          fillColor: Colors.grey[100],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          isDense: true, // For alignment
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 15, horizontal: 12),
+                        ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your phone number';
@@ -229,7 +295,8 @@ class _CreateaccountState extends State<Createaccount> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                // --- FIX: Reduced spacing ---
+                const SizedBox(height: 16), // Was 20
 
                 // Password Field
                 _buildLabel('Password'),
@@ -238,12 +305,17 @@ class _CreateaccountState extends State<Createaccount> {
                   controller: _passwordController,
                   hintText: 'Your password',
                   isPassword: _obscurePassword,
+                  // --- UPDATED VALIDATOR ---
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a password';
                     }
-                    if (value.length < 8) {
-                      return 'Password must be at least 8 characters';
+                    if (!_isLengthValid ||
+                        !_hasUppercase ||
+                        !_hasLowercase ||
+                        !_hasNumber ||
+                        !_hasSpecialCharacter) {
+                      return 'Password does not meet all requirements.';
                     }
                     return null;
                   },
@@ -258,15 +330,34 @@ class _CreateaccountState extends State<Createaccount> {
                     },
                   ),
                 ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Required Password', // This is the red text
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 12,
+
+                // --- UI FOR PASSWORD REQUIREMENTS ---
+                const SizedBox(height: 10), // Was 12
+                Padding(
+                  padding: const EdgeInsets.only(left: 4.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildRequirementRow(
+                          'At least 8 characters', _isLengthValid),
+                      const SizedBox(height: 6),
+                      _buildRequirementRow(
+                          'Contains an uppercase letter', _hasUppercase),
+                      const SizedBox(height: 6),
+                      _buildRequirementRow(
+                          'Contains a lowercase letter', _hasLowercase),
+                      const SizedBox(height: 6),
+                      _buildRequirementRow('Contains a number', _hasNumber),
+                      const SizedBox(height: 6),
+                      _buildRequirementRow(
+                          'Contains a special character', _hasSpecialCharacter),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                // --- END OF UI ---
+
+                // --- FIX: Reduced spacing ---
+                const SizedBox(height: 16), // Was 20
 
                 // Confirm Password Field
                 _buildLabel('Confirm Password'),
@@ -295,7 +386,8 @@ class _CreateaccountState extends State<Createaccount> {
                     },
                   ),
                 ),
-                const SizedBox(height: 40),
+                // --- FIX: Reduced spacing ---
+                const SizedBox(height: 24), // Was 30
 
                 // Next Button
                 ElevatedButton(
@@ -313,7 +405,8 @@ class _CreateaccountState extends State<Createaccount> {
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ),
-                const SizedBox(height: 40), // Extra space at the bottom
+                // --- FIX: Reduced spacing ---
+                const SizedBox(height: 24), // Was 30
               ],
             ),
           ),

@@ -1,12 +1,40 @@
 // I changed this from cupertino.dart to material.dart
 // because the UI uses Material Design components.
+import 'dart:io';
+
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Code.dart';
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Fillupemail.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 class verify extends StatefulWidget {
-  const verify({super.key});
+  // --- ACCEPT ALL 9 PIECES OF DATA ---
+  final String email;
+  final String phone;
+  final String password;
+  final String firstName;
+  final String lastName;
+  final String age;
+  final String height;
+  final String weight;
+  final File? profileImage; // Can be null
+  final String heightUnit;
+  final String weightUnit;
+
+  const verify({
+    super.key,
+    required this.email,
+    required this.phone,
+    required this.password,
+    required this.firstName,
+    required this.lastName,
+    required this.age,
+    required this.height,
+    required this.weight,
+    this.profileImage, // Optional
+    required this.heightUnit,
+    required this.weightUnit
+  });
 
   @override
   State<verify> createState() => _verifyState();

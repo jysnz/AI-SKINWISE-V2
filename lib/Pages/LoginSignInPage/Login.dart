@@ -3,13 +3,17 @@
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/CreateAccount.dart';
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Fillupemail.dart';
 import 'package:flutter/material.dart';
+import 'package:ai_skinwise_v2/Supabase/supabase_config.dart';
+
 
 // Added this import for the Google Sign-In logic
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../Dashboard_Page/Homepage.dart';
 
 class Login extends StatefulWidget {
+
   const Login({super.key});
 
   @override
@@ -17,36 +21,79 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+
+  TextEditingController emailController = TextEditingController ();
+  TextEditingController passwordController = TextEditingController ();
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+
   // This function will trigger the Google pop-up
-  Future<void> _handleSignIn() async {
-    // This is the main object for handling Google Sign-In
-    final GoogleSignIn googleSignIn = GoogleSignIn();
+  Future<void> loginWithEmail() async {
+    final supabase = Supabase.instance.client;
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter both email and password.")),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    print("Attempting Auth login for: $email");
 
     try {
-      // This will open the account chooser pop-up (Screen 2 from your image)
-      final GoogleSignInAccount? account = await googleSignIn.signIn();
+      final AuthResponse response = await supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
 
-      if (account != null) {
-        // User is successfully signed in
-        print('Signed in as: ${account.displayName}');
-        print('User email: ${account.email}');
+      print("LOGIN SUCCESS! User ID: ${response.user?.id}");
 
-        // TODO:
-        // Now you would navigate to your app's home screen
-        // For example:
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
-      } else {
-        // User cancelled the sign-in
-        print('User cancelled the sign-in.');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Login Successful!")),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Homepage()),
+        );
       }
-    } catch (error) {
-      // Handle any errors that might occur
-      print('Sign in failed: $error');
+    } on AuthException catch (e) {
+      print("LOGIN FAILED: ${e.message}");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print("UNEXPECTED ERROR: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("An unexpected error occurred.")),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+
+
     // Replaced const Placeholder() with the Scaffold for your UI
     return Scaffold(
       // The back arrow
@@ -108,18 +155,16 @@ class _LoginState extends State<Login> {
 
               // Email Text Field
               TextFormField(
+                controller: emailController,
                 keyboardType: TextInputType.emailAddress,
                 decoration: InputDecoration(
                   hintText: 'Your Email',
                   filled: true,
                   fillColor: Colors.grey[100],
-                  // Creates the rounded border with no outline
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                 ),
               ),
               const SizedBox(height: 20),
@@ -137,7 +182,8 @@ class _LoginState extends State<Login> {
 
               // Password Text Field
               TextFormField(
-                obscureText: true, // Hides the password
+                controller: passwordController,
+                obscureText: _obscurePassword, // 2. Use state variable here
                 decoration: InputDecoration(
                   hintText: 'Your Password',
                   filled: true,
@@ -146,10 +192,23 @@ class _LoginState extends State<Login> {
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
                   ),
-                  contentPadding:
-                  const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  // 3. Add the Eye Icon button here
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      // Choose icon based on state
+                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                      color: Colors.grey,
+                    ),
+                    onPressed: () {
+                      // Toggle the state
+                      setState(() {
+                        _obscurePassword = !_obscurePassword;
+                      });
+                    },
+                  ),
                 ),
               ),
+
               const SizedBox(height: 12),
 
               // Forgot Password Button
@@ -171,11 +230,7 @@ class _LoginState extends State<Login> {
               // Log in Button
               ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                        builder: (context) => const Homepage()
-                    ),
-                  );
+                  loginWithEmail();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF007AFF), // Blue color
@@ -227,7 +282,7 @@ class _LoginState extends State<Login> {
 
               // Sign in with Google Button
               ElevatedButton(
-                onPressed: _handleSignIn, // Triggers Google Sign-In
+                onPressed: (){}, // Triggers Google Sign-In
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.grey[200], // Light grey background
                   minimumSize: const Size(double.infinity, 50),
