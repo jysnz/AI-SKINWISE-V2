@@ -1,6 +1,5 @@
-// File: dashboard/DashboardContent.dart
-
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'AccountPage.dart';
 import 'DiseaseDetailPage.dart';
 
@@ -12,11 +11,9 @@ class DashboardContent extends StatefulWidget {
 }
 
 class _DashboardContentState extends State<DashboardContent> {
-
   // --- STATE VARIABLES ---
-
-  List<Map<String, String>> _masterDiseaseList = []; // Holds all data from DB
-  List<Map<String, String>> _filteredDiseaseList = []; // Holds the displayed data
+  List<Map<String, dynamic>> _masterDiseaseList = [];
+  List<Map<String, dynamic>> _filteredDiseaseList = [];
   bool _isLoading = true;
 
   final List<String> _rarityOptions = ['All', 'Common', 'Uncommon', 'Rare', 'Very Rare'];
@@ -25,7 +22,6 @@ class _DashboardContentState extends State<DashboardContent> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   bool _isSearchActive = false;
-
 
   @override
   void initState() {
@@ -50,43 +46,63 @@ class _DashboardContentState extends State<DashboardContent> {
     super.dispose();
   }
 
+  // --- FETCH DATA FROM SUPABASE ---
   Future<void> _fetchDiseasesFromDatabase() async {
-    await Future.delayed(const Duration(seconds: 2)); // Simulate network call
+    try {
+      debugPrint('Attempting to fetch from table: skinDiseases...');
 
-    final List<Map<String, String>> dataFromDb = [
-      {'name': 'Acne', 'rarity': 'Common'},
-      {'name': 'Eczema', 'rarity': 'Common'},
-      {'name': 'Psoriasis', 'rarity': 'Uncommon'},
-      {'name': 'Rosacea', 'rarity': 'Common'},
-      {'name': 'Melanoma', 'rarity': 'Rare'},
-      {'name': 'Hives', 'rarity': 'Uncommon'},
-      {'name': 'Dermatitis', 'rarity': 'Common'},
-      {'name': 'Vitiligo', 'rarity': 'Very Rare'},
-    ];
+      // Selects all columns from the table
+      final response = await Supabase.instance.client
+          .from('SkinDiseases')
+          .select();
 
-    if (mounted) {
-      setState(() {
-        _masterDiseaseList = dataFromDb;
-        _filteredDiseaseList = dataFromDb; // Initially, show all
-        _isLoading = false;
-      });
+      debugPrint('Raw Supabase Response: $response');
+
+      final List<Map<String, dynamic>> formattedData = (response as List).map((item) {
+        return {
+          // MAPPING: Database Column -> App Variable
+          'name': item['disease_name'] ?? 'Unknown Name',
+          'rarity': item['rarity'] ?? 'Unknown',
+          'image': item['image_sample_url'] ?? '', // Gets the URL
+          'description': item['description'] ?? 'No description available.',
+          'symptoms': item['symptoms'] ?? '',
+          'remedies': item['remedies'] ?? '',
+          'references': item['references'] ?? '',
+        };
+      }).toList();
+
+      if (mounted) {
+        setState(() {
+          _masterDiseaseList = formattedData;
+          _filteredDiseaseList = formattedData;
+          _isLoading = false;
+        });
+        debugPrint('Data loaded successfully: ${_masterDiseaseList.length} items.');
+      }
+    } catch (e) {
+      debugPrint('CRITICAL ERROR fetching data: $e');
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _filterList() {
     final String query = _searchController.text.toLowerCase();
 
-    List<Map<String, String>> filteredList = _masterDiseaseList;
+    List<Map<String, dynamic>> filteredList = _masterDiseaseList;
 
     if (_selectedRarity != 'All') {
       filteredList = filteredList.where((disease) {
-        return disease['rarity'] == _selectedRarity;
+        return disease['rarity'].toString().toLowerCase() == _selectedRarity.toLowerCase();
       }).toList();
     }
 
     if (query.isNotEmpty) {
       filteredList = filteredList.where((disease) {
-        return disease['name']!.toLowerCase().contains(query);
+        return disease['name'].toString().toLowerCase().contains(query);
       }).toList();
     }
 
@@ -95,7 +111,6 @@ class _DashboardContentState extends State<DashboardContent> {
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -103,8 +118,7 @@ class _DashboardContentState extends State<DashboardContent> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // 1. Custom Header (Profile)
+            // 1. Custom Header
             InkWell(
               onTap: () {
                 Navigator.push(
@@ -127,26 +141,17 @@ class _DashboardContentState extends State<DashboardContent> {
               ),
             ),
 
-            // Line between Guest and Search Bar ✅
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Divider(
-                thickness: 1,
-                height: 1,
-                color: Colors.grey[300],
-              ),
+              child: Divider(thickness: 1, height: 1, color: Colors.grey[300]),
             ),
-
-
 
             // 2. Search Bar
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 20.0),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.0)),
                 child: TextField(
                   controller: _searchController,
                   focusNode: _searchFocusNode,
@@ -162,17 +167,11 @@ class _DashboardContentState extends State<DashboardContent> {
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(
-                        color: Colors.grey[300]!,
-                        width: 1.0,
-                      ),
+                      borderSide: BorderSide(color: Colors.grey[300]!, width: 1.0),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(
-                        color: Color(0xFF005DA1),
-                        width: 2.0,
-                      ),
+                      borderSide: BorderSide(color: Color(0xFF005DA1), width: 2.0),
                     ),
                     filled: true,
                     fillColor: Colors.grey[100],
@@ -181,7 +180,7 @@ class _DashboardContentState extends State<DashboardContent> {
               ),
             ),
 
-            // 3. Section Header (Rarity Dropdown)
+            // 3. Filter Dropdown
             Padding(
               padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 10.0),
               child: Row(
@@ -191,27 +190,16 @@ class _DashboardContentState extends State<DashboardContent> {
                     'Discovered Skin Diseases',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-
-                  // --- MODIFIED: Replaced Dropdown with PopupMenuButton for precise layout ---
                   PopupMenuButton<String>(
-
-                    // --- NEW 1: Adjusts the pop-up location ---
-                    // (dx, dy) - 0 horizontal, 40 pixels down
                     offset: const Offset(0, 30),
-
-                    // --- NEW 2: Adjusts the menu's width ---
-                    constraints: const BoxConstraints(
-                      minWidth: 160, // Forces menu to be at least 160px wide
-                    ),
-
-                    // This builds the "Rarity" button
+                    constraints: const BoxConstraints(minWidth: 160),
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0), //Gives it some tap space
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Rarity', // This is now a static label
+                            'Rarity',
                             style: TextStyle(
                               color: Colors.orange[700],
                               fontSize: 18,
@@ -222,34 +210,23 @@ class _DashboardContentState extends State<DashboardContent> {
                         ],
                       ),
                     ),
-
                     onSelected: (String newValue) {
                       setState(() {
                         _selectedRarity = newValue;
                       });
                       _filterList();
                     },
-
-                    // These properties style the menu itself
-                    color: const Color(0xFF005DA1), // Blue background
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-
-                    // This builds the list of items
+                    color: const Color(0xFF005DA1),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     itemBuilder: (BuildContext context) {
                       return _rarityOptions.map((String value) {
                         bool isSelected = (_selectedRarity == value);
-
                         return PopupMenuItem<String>(
                           value: value,
                           padding: EdgeInsets.zero,
                           child: Container(
                             width: double.infinity,
-                            // ✅ Margin pushes the selected highlight inward
-                            margin: EdgeInsets.symmetric(
-                              horizontal: isSelected ? 8.0 : 0.0,
-                            ),
+                            margin: EdgeInsets.symmetric(horizontal: isSelected ? 8.0 : 0.0),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
                               color: isSelected ? Colors.white : Colors.transparent,
@@ -263,17 +240,15 @@ class _DashboardContentState extends State<DashboardContent> {
                               ),
                             ),
                           ),
-
                         );
-
                       }).toList();
                     },
                   ),
-                ], // <-- This bracket closes the Row's children
-              ), // <-- This parenthesis closes the Row
-            ), // <-- This parenthesis closes the Padding
+                ],
+              ),
+            ),
 
-            // 4. List of Diseases
+            // 4. List View
             Container(
               child: _isLoading
                   ? const Center(
@@ -283,10 +258,16 @@ class _DashboardContentState extends State<DashboardContent> {
                 ),
               )
                   : _filteredDiseaseList.isEmpty
-                  ? const Center(
+                  ? Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: Text('No diseases found.'),
+                  padding: const EdgeInsets.all(32.0),
+                  child: Column(
+                    children: const [
+                      Icon(Icons.inbox, size: 40, color: Colors.grey),
+                      SizedBox(height: 10),
+                      Text('No diseases found or Database Empty.'),
+                    ],
+                  ),
                 ),
               )
                   : ListView.builder(
@@ -296,8 +277,10 @@ class _DashboardContentState extends State<DashboardContent> {
                 itemBuilder: (context, index) {
                   final disease = _filteredDiseaseList[index];
                   return DiseaseCard(
-                    name: disease['name']!,
-                    rarity: disease['rarity']!,
+                    name: disease['name'],
+                    rarity: disease['rarity'],
+                    imageUrl: disease['image'],
+                    fullData: disease,
                   );
                 },
               ),
@@ -309,16 +292,19 @@ class _DashboardContentState extends State<DashboardContent> {
   }
 }
 
-
-// 5. Reusable Card Widget - No changes needed
+// --- REUSABLE CARD WIDGET ---
 class DiseaseCard extends StatelessWidget {
   final String name;
   final String rarity;
+  final String imageUrl;
+  final Map<String, dynamic> fullData;
 
   const DiseaseCard({
     Key? key,
     required this.name,
     required this.rarity,
+    required this.imageUrl,
+    required this.fullData,
   }) : super(key: key);
 
   @override
@@ -333,6 +319,7 @@ class DiseaseCard extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // --- IMAGE DISPLAY ---
             Container(
               width: 50,
               height: 50,
@@ -340,6 +327,16 @@ class DiseaseCard extends StatelessWidget {
                 color: const Color(0xFF005DA1),
                 borderRadius: BorderRadius.circular(10.0),
               ),
+              clipBehavior: Clip.hardEdge,
+              child: imageUrl.isNotEmpty
+                  ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return const Icon(Icons.broken_image, color: Colors.white);
+                },
+              )
+                  : const Icon(Icons.medical_services, color: Colors.white),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -365,14 +362,18 @@ class DiseaseCard extends StatelessWidget {
               ),
             ),
             TextButton(
-              // --- 2. UPDATE THIS onPressed FUNCTION ---
               onPressed: () {
+                // Navigate to Detail Page
+                // NOTE: Ensure your DiseaseDetailPage constructor accepts these arguments!
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => DiseaseDetailPage(
                       name: name,
                       rarity: rarity,
+                      // Uncomment these if your Detail page accepts them:
+                      // description: fullData['description'],
+                      // imageUrl: imageUrl,
                     ),
                   ),
                 );

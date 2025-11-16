@@ -1,15 +1,35 @@
-// File: DiseaseDetailPage.dart
-
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+// Helper class for Expansion Panel data
+class PanelItem {
+  final String header;
+  final String body;
+
+  PanelItem({
+    required this.header,
+    required this.body,
+  });
+}
 
 class DiseaseDetailPage extends StatefulWidget {
   final String name;
   final String rarity;
+  final String imageUrl; // Updated to receive a single URL string
+  final String description;
+  final String symptoms;
+  final String remedies;
+  final String references;
 
   const DiseaseDetailPage({
     Key? key,
     required this.name,
     required this.rarity,
+    this.imageUrl = '',
+    this.description = 'No description provided.',
+    this.symptoms = 'No symptoms listed.',
+    this.remedies = 'No remedies listed.',
+    this.references = '',
   }) : super(key: key);
 
   @override
@@ -17,154 +37,260 @@ class DiseaseDetailPage extends StatefulWidget {
 }
 
 class _DiseaseDetailPageState extends State<DiseaseDetailPage> {
-  // --- STATE FOR IMAGE CAROUSEL ---
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
 
-  // --- DUMMY DATA FOR IMAGES ---
-  final List<Widget> _imagePlaceholders = [
-    _buildImagePlaceholder(Colors.red[100]!, Icons.image_outlined),
-    _buildImagePlaceholder(Colors.blue[100]!, Icons.image_search),
-    _buildImagePlaceholder(Colors.green[100]!, Icons.broken_image_outlined),
-  ];
+  // We will build the panels dynamically in the build method
+  // to ensure they use the latest widget data.
 
-  @override
-  void initState() {
-    super.initState();
-  }
+  // --- WIDGET BUILDERS ---
 
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  // --- HELPER WIDGET FOR DUMMY IMAGES ---
-  static Widget _buildImagePlaceholder(Color color, IconData icon) {
+  Widget _buildImagePlaceholder(BuildContext context) {
     return Container(
-      color: color,
-      child: Center(
+      height: 250,
+      width: double.infinity, // Ensure it takes full width
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      clipBehavior: Clip.hardEdge, // Ensures image respects the rounded corners
+      child: widget.imageUrl.isNotEmpty
+          ? Image.network(
+        widget.imageUrl,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.broken_image, size: 50, color: Colors.grey[400]),
+              const SizedBox(height: 8),
+              Text("Image not found", style: TextStyle(color: Colors.grey[600])),
+            ],
+          );
+        },
+      )
+          : Center(
         child: Icon(
-          icon,
+          Icons.image,
           size: 100,
-          color: Colors.grey[600],
+          color: Colors.grey[400],
         ),
       ),
     );
   }
 
-  // --- HELPER METHOD TO BUILD DOT INDICATORS ---
-  List<Widget> _buildPageIndicator() {
-    List<Widget> list = [];
-    for (int i = 0; i < _imagePlaceholders.length; i++) {
-      list.add(i == _currentPage ? _indicator(true) : _indicator(false));
-    }
-    return list;
+  Widget _buildExpansionTiles() {
+    // Create the list dynamically based on passed data
+    final List<PanelItem> panels = [
+      PanelItem(
+        header: "Description",
+        body: widget.description,
+      ),
+      PanelItem(
+        header: 'Symptoms',
+        body: widget.symptoms,
+      ),
+      PanelItem(
+        header: 'Remedies',
+        body: widget.remedies,
+      ),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(
+          color: Colors.grey[300]!,
+          width: 1.0,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        children: List.generate(panels.length, (index) {
+          final item = panels[index];
+          return Column(
+            children: [
+              ExpansionTile(
+                tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                iconColor: Colors.grey[700],
+                collapsedIconColor: Colors.grey[700],
+                title: Text(
+                  item.header,
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87),
+                ),
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        item.body,
+                        style: const TextStyle(
+                            fontSize: 16, height: 1.5, color: Colors.black54),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              if (index < panels.length - 1)
+                Divider(
+                    height: 1,
+                    thickness: 1,
+                    indent: 16,
+                    endIndent: 16,
+                    color: Colors.grey[300]),
+            ],
+          );
+        }),
+      ),
+    );
   }
 
-  // --- HELPER WIDGET FOR A SINGLE DOT ---
-  Widget _indicator(bool isActive) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 150),
-      margin: const EdgeInsets.symmetric(horizontal: 4.0),
-      height: 8.0,
-      width: isActive ? 24.0 : 8.0,
-      decoration: BoxDecoration(
-        color: isActive ? const Color(0xFF005DA1) : Colors.grey[400],
-        borderRadius: const BorderRadius.all(Radius.circular(12)),
+  Widget _buildReferencesSection(BuildContext context) {
+    if (widget.references.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'References',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.grey[50],
+            border: Border.all(color: Colors.grey[200]!),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              children: [
+                // We display the reference string directly.
+                // If you have multiple links separated by commas in your DB,
+                // you would need to split them here.
+                // For now, we treat it as one main reference source.
+                _buildReferenceTile(
+                  context,
+                  widget.references, // The URL
+                  'Tap to view source', // Title
+                  widget.references, // Subtitle (The URL itself)
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildReferenceTile(
+      BuildContext context, String url, String title, String subtitle) {
+
+    Future<void> launchUrlInExternalApp() async {
+      // Basic check to see if it looks like a URL
+      if (!url.startsWith('http')) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid URL provided in database')),
+        );
+        return;
+      }
+
+      final Uri uri = Uri.parse(url);
+      try {
+        if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+          throw 'Could not launch';
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Could not launch $url')),
+          );
+        }
+      }
+    }
+
+    return ListTile(
+      leading: Icon(
+        Icons.article_outlined,
+        color: Theme.of(context).colorScheme.primary,
       ),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: Colors.grey[600],
+          fontSize: 14,
+        ),
+      ),
+      trailing: Icon(Icons.open_in_new_outlined,
+          size: 20, color: Colors.grey[500]),
+      onTap: launchUrlInExternalApp,
+      contentPadding:
+      const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This is the long description text
-    const String description =
-        'A common skin condition that occurs when hair follicles '
-        'become clogged with oil, dead skin cells, and bacteria. It '
-        'often appears on the face, chest, back, and shoulders and '
-        'can range from mild to severe.\n\n'
-        'Types of Lesions:\n'
-        'Whiteheads (Closed Comedones): Small, flesh-colored '
-        'bumps caused by clogged pores.\n'
-        'Blackheads (Open Comedones): Dark, open pores filled '
-        'with excess oil and dead skin.\n'
-        'Papules: Small, red, inflamed bumps that may feel tender.\n'
-        'Pustules (Pimples): Red bumps with pus at the tip.\n'
-        'Nodules: Large, painful lumps deep under the skin.\n'
-        'Cysts: Painful, pus-filled lumps that can cause scarring.';
-
     return Scaffold(
       appBar: AppBar(
         leading: TextButton.icon(
           icon: const Icon(
             Icons.arrow_back,
             size: 28.0,
+            color: Colors.black,
           ),
-          label: const Text('Back'),
-          onPressed: () => Navigator.of(context).pop(),
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.black,
-            textStyle: const TextStyle(
+          label: const Text(
+            'Back',
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
+              color: Colors.black,
             ),
           ),
+          onPressed: () => Navigator.of(context).pop(),
         ),
         leadingWidth: 110.0,
-        title: const Text(''),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 1, // Note: The AppBar's elevation already creates a line.
-        // The Divider below adds another one.
+        elevation: 0,
       ),
-
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            // --- ✅ DIVIDER ADDED HERE ---
-            // This divider is separate from the AppBar's elevation shadow
             const Divider(height: 1, thickness: 1),
-            // --- ✅ END OF CHANGE ---
             const SizedBox(height: 16.0),
-            // --- IMAGE CAROUSEL ---
-            SizedBox(
-              height: 300,
-              child: Stack(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0), // Padding around photo
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16), // Round edges
-                      child: PageView.builder(
-                        controller: _pageController,
-                        itemCount: _imagePlaceholders.length,
-                        itemBuilder: (context, index) {
-                          return _imagePlaceholders[index];
-                        },
-                        onPageChanged: (int page) {
-                          setState(() {
-                            _currentPage = page;
-                          });
-                        },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-            // --- DOT INDICATORS ---
-            const SizedBox(height: 12.0),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: _buildPageIndicator(),
-            ),
-            const SizedBox(height: 16.0), // Spacing after dots
+            // Image
+            _buildImagePlaceholder(context),
 
-            // 2. Main Content Area (for text above tiles)
+            const SizedBox(height: 20.0),
+
+            // Main Content Area: Title and Rarity
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
@@ -190,116 +316,25 @@ class _DiseaseDetailPageState extends State<DiseaseDetailPage> {
                       fontStyle: FontStyle.italic,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
                 ],
               ),
             ),
-            const SizedBox(height: 8.0), // Spacing between rarity and first tile
 
-
-            // 3. Expandable Sections
+            // Expandable Sections
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12.0),
-                  border: Border.all(
-                    color: Colors.grey, // Border color
-                    width: 1.0,           // Border width
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.1),
-                      spreadRadius: 1,
-                      blurRadius: 5,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    // --- DESCRIPTION TILE ---
-                    ExpansionTile(
-                      tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      iconColor: Colors.grey[700],
-                      collapsedIconColor: Colors.grey[700],
-                      title: const Text(
-                        'Description',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87),
-                      ),
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-                          child: Text(
-                            description,
-                            style: const TextStyle(fontSize: 16, height: 1.5, color: Colors.black54),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16, color: Colors.grey), // Kept this divider
-
-                    // --- SYMPTOMS TILE ---
-                    ExpansionTile(
-                      tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      iconColor: Colors.grey[700],
-                      collapsedIconColor: Colors.grey[700],
-                      title: const Text(
-                        'Symptoms',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      children: const [
-                        ListTile(
-                          title: Text('• Symptom 1...', style: TextStyle(color: Colors.black54)),
-                          dense: true,
-                        ),
-                        ListTile(
-                          title: Text('• Symptom 2...', style: TextStyle(color: Colors.black54)),
-                          dense: true,
-                        ),
-                      ],
-                    ),
-
-                    const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16, color: Colors.grey), // Kept this divider
-
-                    // --- REMEDIES TILE ---
-                    ExpansionTile(
-                      tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      iconColor: Colors.grey[700],
-                      collapsedIconColor: Colors.grey[700],
-                      title: const Text(
-                        'Remedies',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      children: const [
-                        ListTile(
-                          title: Text('• Remedy 1...', style: TextStyle(color: Colors.black54)),
-                          dense: true,
-                        ),
-                        ListTile(
-                          title: Text('• Remedy 2...', style: TextStyle(color: Colors.black54)),
-                          dense: true,
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              child: _buildExpansionTiles(),
             ),
-            const SizedBox(height: 16.0), // Spacing at the bottom
+            const SizedBox(height: 24.0),
+
+            // References Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: _buildReferencesSection(context),
+            ),
+
+            const SizedBox(height: 24.0),
           ],
         ),
       ),
