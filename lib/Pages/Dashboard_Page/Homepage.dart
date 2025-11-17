@@ -1,4 +1,3 @@
-import 'package:ai_skinwise_v2/Pages/History_Page/HistoryInterface.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../Scanner_Page/ScannerPage.dart';
@@ -19,7 +18,6 @@ class _HomepageState extends State<Homepage> {
     DashboardContent(),
     const Scannerpage(),
     const Messagespage(),
-    const Historyinterface(),
   ];
 
   void _onItemTapped(int index) {
@@ -28,7 +26,12 @@ class _HomepageState extends State<Homepage> {
     });
   }
 
-  Widget _buildActiveIcon(String assetName, String label, double width, double height) {
+  Widget _buildActiveIcon(
+    String assetName,
+    String label,
+    double width,
+    double height,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 18, vertical: 6),
       decoration: BoxDecoration(
@@ -43,19 +46,18 @@ class _HomepageState extends State<Homepage> {
             height: height,
             color: Colors.white,
           ),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
-          ),
+          Text(label, style: TextStyle(color: Colors.white, fontSize: 12)),
         ],
       ),
     );
   }
 
-  Widget _buildInactiveIcon(String assetName, String label, double width, double height) {
+  Widget _buildInactiveIcon(
+    String assetName,
+    String label,
+    double width,
+    double height,
+  ) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 18, vertical: 6),
       color: Colors.transparent,
@@ -68,13 +70,7 @@ class _HomepageState extends State<Homepage> {
             color: Color(0xFF005DA1),
           ),
           SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              color: Color(0xFF005DA1),
-              fontSize: 12,
-            ),
-          ),
+          Text(label, style: TextStyle(color: Color(0xFF005DA1), fontSize: 12)),
         ],
       ),
     );
@@ -84,20 +80,12 @@ class _HomepageState extends State<Homepage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: null,
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _widgetOptions,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: _widgetOptions),
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border: Border(
-            top: BorderSide(
-              color: Color(0xFF005DA1),
-              width: 1.0,
-            ),
-          ),
+          border: Border(top: BorderSide(color: Color(0xFF005DA1), width: 1.0)),
         ),
         child: BottomNavigationBar(
           type: BottomNavigationBarType.fixed,
@@ -110,22 +98,57 @@ class _HomepageState extends State<Homepage> {
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: _buildInactiveIcon('Icons/Home_Icon.png', 'Home', 20.5, 20),
-              activeIcon: _buildActiveIcon('Icons/Home_Icon.png', 'Home', 20.5, 20),
+              activeIcon: _buildActiveIcon(
+                'Icons/Home_Icon.png',
+                'Home',
+                20.5,
+                20,
+              ),
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/Scan_Icon.png', 'Scanner', 19.49, 21),
-              activeIcon: _buildActiveIcon('Icons/Scan_Icon.png', 'Scanner', 19.49, 21),
+              icon: _buildInactiveIcon(
+                'Icons/Scan_Icon.png',
+                'Scanner',
+                19.49,
+                21,
+              ),
+              activeIcon: _buildActiveIcon(
+                'Icons/Scan_Icon.png',
+                'Scanner',
+                19.49,
+                21,
+              ),
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/Message_Icon.png', 'Message', 21.52, 19),
-              activeIcon: _buildActiveIcon('Icons/Message_Icon.png', 'Message', 21.52, 19),
+              icon: _buildInactiveIcon(
+                'Icons/Message_Icon.png',
+                'Message',
+                21.52,
+                19,
+              ),
+              activeIcon: _buildActiveIcon(
+                'Icons/Message_Icon.png',
+                'Message',
+                21.52,
+                19,
+              ),
               label: '',
             ),
             BottomNavigationBarItem(
-              icon: _buildInactiveIcon('Icons/History_Icon.png', 'History', 21.32, 20.8),
-              activeIcon: _buildActiveIcon('Icons/History_Icon.png', 'History', 21.32, 20.8),
+              icon: _buildInactiveIcon(
+                'Icons/History_Icon.png',
+                'History',
+                21.32,
+                20.8,
+              ),
+              activeIcon: _buildActiveIcon(
+                'Icons/History_Icon.png',
+                'History',
+                21.32,
+                20.8,
+              ),
               label: '',
             ),
           ],
