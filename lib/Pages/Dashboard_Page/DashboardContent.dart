@@ -130,11 +130,11 @@ class _DashboardContentState extends State<DashboardContent> {
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: Row(
                   children: [
-                    Icon(Icons.account_circle_outlined, size: 60, color: Color(0xFF005DA1)),
+                    Icon(Icons.account_circle_outlined, size: 50, color: Color(0xFF005DA1)),
                     const SizedBox(width: 12),
                     const Text(
                       'Guest',
-                      style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),

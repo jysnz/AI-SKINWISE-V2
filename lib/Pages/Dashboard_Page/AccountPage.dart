@@ -9,20 +9,19 @@ class AccountPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // This is still needed for your "Back" button
         leadingWidth: 100,
         leading: GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: Row(
             children: const [
               SizedBox(width: 15),
-              Icon(Icons.arrow_back, color: Colors.black, size: 24.0),
+              Icon(Icons.arrow_back, color: Colors.black, size: 20),
               SizedBox(width: 10),
               Text(
                 'Back',
                 style: TextStyle(
                   color: Colors.black,
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -37,13 +36,14 @@ class AccountPage extends StatelessWidget {
             padding: const EdgeInsets.only(right: 10.0),
             child: TextButton.icon(
               onPressed: () { /* TODO: Log out */ },
-              icon: const Icon(Icons.logout, color: Colors.red, size: 24.0),
+              icon: const Icon(Icons.logout, color: Colors.black, size: 20),
               label: const Text(
                 'Log out',
                 style: TextStyle(
-                  color: Colors.red,
-                  fontSize: 20,
+                  color: Colors.black,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
+                  fontFamily: 'Arial',
                 ),
               ),
             ),
@@ -65,7 +65,7 @@ class AccountPage extends StatelessWidget {
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.bold,
-                fontSize: 24,
+                fontSize: 20,
               ),
             ),
             const Padding(
