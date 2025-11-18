@@ -2,7 +2,9 @@ import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Fee.dart';
 import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Findclinic.dart';
 import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Freeconsult.dart';
 import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Freemess.dart';
-import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Schedfee.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Nauravailable.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Rekwes.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Schedulefee.dart';
 import 'package:ai_skinwise_v2/Pages/History_Page/ArchiveScreenContainer.dart'; // <--- Ito lang ang kailangan
 
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Code.dart';
@@ -64,7 +66,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // Ito ang tama, dahil ArchiveScreenContainer ang naglalaman ng buong History/Archive page.
-      home: Schedfee(),
+      // FIX: Set the home property to your main page.
+      home: Nauravailable(),
 
       routes: {'/scanner': (context) => const Camerascanner()},
     );

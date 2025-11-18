@@ -1,3 +1,4 @@
+import 'package:ai_skinwise_v2/Pages/History_Page/ArchiveScreenContainer.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../Scanner_Page/ScannerPage.dart';
@@ -18,6 +19,7 @@ class _HomepageState extends State<Homepage> {
     DashboardContent(),
     const Scannerpage(),
     const Messagespage(),
+    ArchiveScreenContainer(),
   ];
 
   void _onItemTapped(int index) {
