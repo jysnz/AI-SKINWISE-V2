@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Freemess.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -18,24 +19,19 @@ class Detectioninformation extends StatefulWidget {
 }
 
 class _DetectioninformationState extends State<Detectioninformation> {
-
   int _openPanelIndex = -1;
 
   final List<PanelItem> _panels = [
-    PanelItem(
-      header: "Description",
-      body:
-        "Description of Acne"
-    ),
+    PanelItem(header: "Description", body: "Description of Acne"),
     PanelItem(
       header: 'Symptoms',
       body:
-      '• Whiteheads (Closed Comedones)\n• Blackheads (Open Comedones)\n• Papules: Small, red, inflamed bumps\n• Pustules (Pimples)\n• Nodules: Large, painful lumps\n• Cysts: Painful, pus-filled lumps',
+          '• Whiteheads (Closed Comedones)\n• Blackheads (Open Comedones)\n• Papules: Small, red, inflamed bumps\n• Pustules (Pimples)\n• Nodules: Large, painful lumps\n• Cysts: Painful, pus-filled lumps',
     ),
     PanelItem(
       header: 'Remedies',
       body:
-      '• Over-the-counter (OTC) treatments: Benzoyl peroxide, Salicylic acid, Adapalene.\n• Prescription medications: Retinoids, Antibiotics.\n• Lifestyle: Gently wash face, avoid touching face, shampoo hair regularly.',
+          '• Over-the-counter (OTC) treatments: Benzoyl peroxide, Salicylic acid, Adapalene.\n• Prescription medications: Retinoids, Antibiotics.\n• Lifestyle: Gently wash face, avoid touching face, shampoo hair regularly.',
     ),
   ];
 
@@ -46,15 +42,16 @@ class _DetectioninformationState extends State<Detectioninformation> {
       appBar: AppBar(
         // --- MODIFIED ---
         // Show back button if we have images
-        leading: widget.imagePaths.isNotEmpty
-            ? IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            // Navigate back to the home route
-            Navigator.of(context).pushReplacementNamed('/home');
-          },
-        )
-            : null,
+        leading:
+            widget.imagePaths.isNotEmpty
+                ? IconButton(
+                  icon: const Icon(Icons.arrow_back),
+                  onPressed: () {
+                    // Navigate back to the home route
+                    Navigator.of(context).pushReplacementNamed('/home');
+                  },
+                )
+                : null,
         // --- END MODIFIED ---
       ),
       body: SingleChildScrollView(
@@ -74,10 +71,7 @@ class _DetectioninformationState extends State<Detectioninformation> {
                 children: [
                   const Text(
                     'Acne',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   const Text(
@@ -116,11 +110,7 @@ class _DetectioninformationState extends State<Detectioninformation> {
         border: Border.all(color: Colors.grey[300]!),
       ),
       child: Center(
-        child: Icon(
-          Icons.image,
-          size: 100,
-          color: Colors.grey[400],
-        ),
+        child: Icon(Icons.image, size: 100, color: Colors.grey[400]),
       ),
     );
   }
@@ -140,31 +130,34 @@ class _DetectioninformationState extends State<Detectioninformation> {
       },
       elevation: 1,
       dividerColor: Colors.grey[300],
-      children: _panels.map((item) {
-        int panelIndex = _panels.indexOf(item);
-        return ExpansionPanel(
-          headerBuilder: (BuildContext context, bool isExpanded) {
-            return ListTile(
-              title: Text(
-                item.header,
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+      children:
+          _panels.map((item) {
+            int panelIndex = _panels.indexOf(item);
+            return ExpansionPanel(
+              headerBuilder: (BuildContext context, bool isExpanded) {
+                return ListTile(
+                  title: Text(
+                    item.header,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                );
+              },
+              body: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                child: Text(
+                  item.body,
+                  style: const TextStyle(fontSize: 16, height: 1.5),
                 ),
               ),
+              isExpanded:
+                  _openPanelIndex ==
+                  panelIndex, // This part was already correct
+              canTapOnHeader: true,
             );
-          },
-          body: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(
-              item.body,
-              style: const TextStyle(fontSize: 16, height: 1.5),
-            ),
-          ),
-          isExpanded: _openPanelIndex == panelIndex, // This part was already correct
-          canTapOnHeader: true,
-        );
-      }).toList(),
+          }).toList(),
     );
   }
 
@@ -177,10 +170,15 @@ class _DetectioninformationState extends State<Detectioninformation> {
             icon: const Icon(Icons.search, color: Colors.white),
             label: const Text(
               'Find Nearest Clinic',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              style: TextStyle(
+                color: Color.fromARGB(255, 248, 201, 201),
+                fontSize: 16,
+              ),
             ),
             onPressed: () {
-              // Handle find clinic
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (context) => const Freemess()));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
@@ -283,7 +281,12 @@ class _DetectioninformationState extends State<Detectioninformation> {
                   'American Academy of Dermatology: Acne',
                   'aad.org',
                 ),
-                Divider(height: 1, indent: 16, endIndent: 16, color: Colors.grey[200]),
+                Divider(
+                  height: 1,
+                  indent: 16,
+                  endIndent: 16,
+                  color: Colors.grey[200],
+                ),
                 _buildReferenceTile(
                   'https://www.mayoclinic.org/diseases-conditions/acne/symptoms-causes/syc-20368047',
                   'Mayo Clinic: Acne Symptoms & Causes',
@@ -303,9 +306,9 @@ class _DetectioninformationState extends State<Detectioninformation> {
       final Uri uri = Uri.parse(url);
       if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not launch $url')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Could not launch $url')));
         }
       }
     }
@@ -317,19 +320,17 @@ class _DetectioninformationState extends State<Detectioninformation> {
       ),
       title: Text(
         title,
-        style: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 16,
-        ),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          color: Colors.grey[600],
-          fontSize: 14,
-        ),
+        style: TextStyle(color: Colors.grey[600], fontSize: 14),
       ),
-      trailing: Icon(Icons.open_in_new_outlined, size: 20, color: Colors.grey[500]),
+      trailing: Icon(
+        Icons.open_in_new_outlined,
+        size: 20,
+        color: Colors.grey[500],
+      ),
       onTap: _launchUrl,
       contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
     );
@@ -341,10 +342,7 @@ class PanelItem {
   final String header;
   final String body;
 
-  PanelItem({
-    required this.header,
-    required this.body,
-  });
+  PanelItem({required this.header, required this.body});
 }
 
 // --- NEW WIDGET ---
@@ -402,15 +400,16 @@ class _ImageCarouselState extends State<_ImageCarousel> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               widget.imagePaths.length,
-                  (index) => Container(
+              (index) => Container(
                 width: 8,
                 height: 8,
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: _currentPage == index
-                      ? Theme.of(context).colorScheme.primary
-                      : Colors.grey[300],
+                  color:
+                      _currentPage == index
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey[300],
                 ),
               ),
             ),

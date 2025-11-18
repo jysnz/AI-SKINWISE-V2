@@ -23,7 +23,7 @@ class ArchiveItemData {
 enum SortOption { date, name }
 
 // -----------------------------------------------------------------
-// --- SORTING MIXIN (Reusable Logic) - FIXED ---
+// --- SORTING MIXIN (Reusable Logic) ---
 // -----------------------------------------------------------------
 mixin SortableContent<T extends StatefulWidget> on State<T> {
   SortOption _currentSort = SortOption.date;
@@ -50,7 +50,7 @@ mixin SortableContent<T extends StatefulWidget> on State<T> {
             final dateA = formatter.parse(dateAString);
             final dateB = formatter.parse(dateBString);
 
-            // FIXED: Sort by date descending (newest first)
+            // Sort by date descending (newest first)
             return dateB.compareTo(dateA);
           } catch (e) {
             // Fallback: If parsing fails, maintain current order
@@ -94,7 +94,7 @@ mixin SortableContent<T extends StatefulWidget> on State<T> {
 }
 
 // -----------------------------------------------------------------
-// --- 2. Archive Item Tile Widget - UPDATED UI ---
+// --- 2. Archive Item Tile Widget ---
 // -----------------------------------------------------------------
 class ArchiveItemTile extends StatelessWidget {
   final ArchiveItemData item;
@@ -198,7 +198,7 @@ class ArchiveItemTile extends StatelessWidget {
 }
 
 // -----------------------------------------------------------------
-// --- 3. History Content - UPDATED ---
+// --- 3. History Content (FIXED) ---
 // -----------------------------------------------------------------
 class HistoryContent extends StatefulWidget {
   const HistoryContent({super.key});
@@ -240,110 +240,115 @@ class _HistoryContentState extends State<HistoryContent> with SortableContent {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        // Main Content
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // "Saved" label and Sort button
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                top: 12.0,
-                bottom: 8.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Saved',
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-                  ),
-
-                  // Sort button with dropdown arrow
-                  GestureDetector(
-                    onTap: () => toggleSortMenu(setState),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Sort',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.orange.shade400,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.orange.shade400,
-                          size: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // History List
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _historyItems.length,
-                itemBuilder: (context, index) {
-                  return ArchiveItemTile(item: _historyItems[index]);
-                },
-              ),
-            ),
-          ],
-        ),
-
-        // Floating Sort Dropdown Menu
-        if (_isSortMenuOpen)
-          Positioned(
-            top: 40,
-            right: 16,
-            child: Material(
-              elevation: 4,
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                width: 130,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                  borderRadius: BorderRadius.circular(4),
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          // Main Content Column
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // "Saved" label and Sort button
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 12.0,
+                  bottom: 8.0,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    buildDropdownOption(
-                      SortOption.name,
-                      'Name (A-Z)',
-                      (option) => sortItems(option, _historyItems, setState),
+                    const Text(
+                      'Saved',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                      ),
                     ),
-                    const Divider(height: 1, thickness: 1),
-                    buildDropdownOption(
-                      SortOption.date,
-                      'Date',
-                      (option) => sortItems(option, _historyItems, setState),
+
+                    // Sort button with dropdown arrow
+                    GestureDetector(
+                      onTap: () => toggleSortMenu(setState),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Sort',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.orange.shade400,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.orange.shade400,
+                            size: 24,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
+
+              // History List (FIXED: Wrapped ListView.builder in Expanded)
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: _historyItems.length,
+                  itemBuilder: (context, index) {
+                    return ArchiveItemTile(item: _historyItems[index]);
+                  },
+                ),
+              ),
+            ],
           ),
-      ],
+
+          // Floating Sort Dropdown Menu
+          if (_isSortMenuOpen)
+            Positioned(
+              top: 40,
+              right: 16,
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 130,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300, width: 1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      buildDropdownOption(
+                        SortOption.name,
+                        'Name (A-Z)',
+                        (option) => sortItems(option, _historyItems, setState),
+                      ),
+                      const Divider(height: 1, thickness: 1),
+                      buildDropdownOption(
+                        SortOption.date,
+                        'Date',
+                        (option) => sortItems(option, _historyItems, setState),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
 
 // -----------------------------------------------------------------
-// --- 4. Archive Content - UPDATED ---
+// --- 4. Archive Content (FIXED) ---
 // -----------------------------------------------------------------
 class Archive extends StatefulWidget {
   const Archive({super.key});
@@ -390,110 +395,112 @@ class _ArchiveState extends State<Archive> with SortableContent {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Note text and Date button
-            Padding(
-              padding: const EdgeInsets.only(
-                left: 16.0,
-                right: 16.0,
-                top: 12.0,
-                bottom: 8.0,
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'note: it will be automatically permanently removed after 30 days',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontStyle: FontStyle.italic,
-                        fontSize: 11,
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Note text and Date button
+              Padding(
+                padding: const EdgeInsets.only(
+                  left: 16.0,
+                  right: 16.0,
+                  top: 12.0,
+                  bottom: 8.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'note: it will be automatically permanently removed after 30 days',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
+                    const SizedBox(width: 8),
 
-                  // Sort button with dropdown arrow
-                  GestureDetector(
-                    onTap: () => toggleSortMenu(setState),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'Sort',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.orange.shade400,
-                            fontWeight: FontWeight.w500,
+                    // Sort button with dropdown arrow
+                    GestureDetector(
+                      onTap: () => toggleSortMenu(setState),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Sort',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.orange.shade400,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 4),
-                        Icon(
-                          Icons.arrow_drop_down,
-                          color: Colors.orange.shade400,
-                          size: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Archive List
-            Expanded(
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                itemCount: _archivedItems.length,
-                itemBuilder: (context, index) {
-                  return ArchiveItemTile(item: _archivedItems[index]);
-                },
-              ),
-            ),
-          ],
-        ),
-
-        // Floating Sort Dropdown Menu
-        if (_isSortMenuOpen)
-          Positioned(
-            top: 40,
-            right: 16,
-            child: Material(
-              elevation: 4,
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                width: 130,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(color: Colors.grey.shade300, width: 1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    buildDropdownOption(
-                      SortOption.name,
-                      'Name (A-Z)',
-                      (option) => sortItems(option, _archivedItems, setState),
-                    ),
-                    const Divider(height: 1, thickness: 1),
-                    buildDropdownOption(
-                      SortOption.date,
-                      'Date',
-                      (option) => sortItems(option, _archivedItems, setState),
+                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.arrow_drop_down,
+                            color: Colors.orange.shade400,
+                            size: 24,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-            ),
+
+              // Archive List (FIXED: Wrapped ListView.builder in Expanded)
+              Expanded(
+                child: ListView.builder(
+                  padding: EdgeInsets.zero,
+                  itemCount: _archivedItems.length,
+                  itemBuilder: (context, index) {
+                    return ArchiveItemTile(item: _archivedItems[index]);
+                  },
+                ),
+              ),
+            ],
           ),
-      ],
+
+          // Floating Sort Dropdown Menu
+          if (_isSortMenuOpen)
+            Positioned(
+              top: 40,
+              right: 16,
+              child: Material(
+                elevation: 4,
+                borderRadius: BorderRadius.circular(4),
+                child: Container(
+                  width: 130,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(color: Colors.grey.shade300, width: 1),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      buildDropdownOption(
+                        SortOption.name,
+                        'Name (A-Z)',
+                        (option) => sortItems(option, _archivedItems, setState),
+                      ),
+                      const Divider(height: 1, thickness: 1),
+                      buildDropdownOption(
+                        SortOption.date,
+                        'Date',
+                        (option) => sortItems(option, _archivedItems, setState),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -524,6 +531,7 @@ class ArchiveScreenContainer extends StatelessWidget {
             child: Column(
               children: [
                 TabBar(
+                  isScrollable: false,
                   tabs: const [Tab(text: 'History'), Tab(text: 'Archived')],
                   indicatorPadding: EdgeInsets.zero,
                   indicatorSize: TabBarIndicatorSize.tab,
@@ -541,54 +549,8 @@ class ArchiveScreenContainer extends StatelessWidget {
           ),
         ),
 
-        body: const TabBarView(children: [HistoryContent(), Archive()]),
-
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.qr_code_scanner),
-              label: 'Scanner',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.message),
-              label: 'Message',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.history),
-              label: 'History',
-            ),
-          ],
-          currentIndex: 3,
-          selectedItemColor: _kPrimaryBlue,
-          unselectedItemColor: Colors.grey,
-          showUnselectedLabels: true,
-          type: BottomNavigationBarType.fixed,
-        ),
+        body: TabBarView(children: [HistoryContent(), Archive()]),
       ),
-    );
-  }
-}
-
-// -----------------------------------------------------------------
-// --- 6. Main Entry Point ---
-// -----------------------------------------------------------------
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: _kPrimaryBlue,
-        colorScheme: ColorScheme.fromSwatch().copyWith(primary: _kPrimaryBlue),
-      ),
-      home: const ArchiveScreenContainer(),
     );
   }
 }

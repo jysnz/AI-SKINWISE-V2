@@ -1,7 +1,9 @@
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Fee.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Findclinic.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Freeconsult.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Freemess.dart';
+import 'package:ai_skinwise_v2/Pages/Clinic%20Page/Schedfee.dart';
 import 'package:ai_skinwise_v2/Pages/History_Page/ArchiveScreenContainer.dart'; // <--- Ito lang ang kailangan
-
-// import 'package:ai_skinwise_v2/Pages/History_Page/HistoryInterface.dart'; // TINANGGAL PARA IWAS CONFLICT
-// import 'package:ai_skinwise_v2/Pages/History_Page/Sortdate.dart';             // TINANGGAL PARA IWAS CONFLICT
 
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Code.dart';
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/CreateAccount.dart';
@@ -11,6 +13,7 @@ import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Update.dart';
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/personalinfo.dart';
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/verify.dart';
 import 'package:ai_skinwise_v2/Pages/LoginSignInPage/Fillupemail.dart';
+import 'package:ai_skinwise_v2/Pages/StartPage.dart';
 import 'package:flutter/material.dart';
 // Import your pages from their new locations
 import 'Pages/Dashboard_Page/Homepage.dart';
@@ -61,8 +64,8 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // Ito ang tama, dahil ArchiveScreenContainer ang naglalaman ng buong History/Archive page.
-      home: const ArchiveScreenContainer(),
-      // We can also define routes for navigation
+      home: Schedfee(),
+
       routes: {'/scanner': (context) => const Camerascanner()},
     );
   }
