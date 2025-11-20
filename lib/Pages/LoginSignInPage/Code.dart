@@ -1,5 +1,6 @@
 import 'dart:async'; // For Timer
 import 'dart:convert'; // For jsonEncode
+import 'package:ai_skinwise_v2/Pages/LoginSignInPage/CongratulationPage.dart';
 import 'package:http/http.dart' as http; // For API calls
 
 import 'package:ai_skinwise_v2/Pages/Dashboard_Page/Homepage.dart';
@@ -38,6 +39,51 @@ class _CodeState extends State<Code> {
   void initState() {
     super.initState();
     _startTimer();
+  }
+
+  // Helper to extract number and convert Height (Inches -> CM)
+  double _processHeight(dynamic rawInput) {
+    String input = rawInput.toString().toLowerCase();
+
+    // 1. Extract the numeric part using Regex (finds 170, 5.9, etc)
+    RegExp regExp = RegExp(r'([0-9.]+)');
+    final match = regExp.firstMatch(input);
+
+    if (match == null) return 0.0; // Fallback if no number found
+
+    double value = double.parse(match.group(0)!);
+
+    // 2. Check if it is in inches
+    // Checks for "in", "inch", or double quote "
+    if (input.contains('in') || input.contains('inch') || input.contains('"')) {
+      // Convert Inches to CM
+      return value * 2.54;
+    }
+
+    // Otherwise return the number as is (assuming it's already CM)
+    return value;
+  }
+
+  // Helper to extract number and convert Weight (Kg -> Lbs)
+  double _processWeight(dynamic rawInput) {
+    String input = rawInput.toString().toLowerCase();
+
+    // 1. Extract the numeric part
+    RegExp regExp = RegExp(r'([0-9.]+)');
+    final match = regExp.firstMatch(input);
+
+    if (match == null) return 0.0;
+
+    double value = double.parse(match.group(0)!);
+
+    // 2. Check if it is in Kg
+    if (input.contains('kg') || input.contains('kilo')) {
+      // Convert Kg to Pounds (Lbs)
+      return value * 2.20462;
+    }
+
+    // Otherwise return the number as is (assuming it's already Lbs)
+    return value;
   }
 
   void _startTimer() {
@@ -146,23 +192,34 @@ class _CodeState extends State<Code> {
     });
 
     try {
-      // Create the complete payload including OTP and all registration data.
+      // --- PROCESS HEIGHT AND WEIGHT ---
+      // 1. Get raw values
+      var rawHeight = widget.userData['Height'];
+      var rawWeight = widget.userData['Weight'];
+
+      // 2. Convert and clean them
+      // We use .round() to send clean integers (e.g. 180 instead of 180.0)
+      // Remove .round() if you want decimals.
+      int finalHeight = _processHeight(rawHeight).round();
+      int finalWeight = _processWeight(rawWeight).round();
+
+      // 3. Create the payload
       final Map<String, dynamic> registrationPayload = {
-        // Spread all user data (firstName, lastName, Age, Height, Weight, PhoneNumber, and CRITICALLY, **password**)
+        // Spread the original data
         ...widget.userData,
+
+        // OVERWRITE Height and Weight with the new numeric values
+        "Height": finalHeight,
+        "Weight": finalWeight,
 
         // Add verification specific fields
         "to": widget.email,
         "code": code,
-
-        // Add createdAt field for Supabase database table
         "createdAt": DateTime.now().toIso8601String(),
       };
 
-      // Assumption: This new endpoint handles:
-      // 1. OTP verification.
-      // 2. If approved, Supabase AUTH registration (using email and password).
-      // 3. Insertion into the userInformation table (using the rest of the data).
+      print("Sending Payload: $registrationPayload"); // Debug print to check values
+
       final response = await http.post(
         Uri.parse('$baseUrl/verify-and-register'),
         headers: {"Content-Type": "application/json"},
@@ -172,18 +229,15 @@ class _CodeState extends State<Code> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200 && data['status'] == 'approved') {
-        // Success! Verification approved and registration presumed complete by backend.
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Verification and Registration Successful!')),
         );
 
-        // Navigate to Homepage
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const Homepage()),
+          MaterialPageRoute(builder: (context) => CongratulationPage(email: widget.email,)),
         );
       } else {
-        // Failure (Wrong code or expired or registration failed)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data['message'] ?? 'Invalid code or Registration Failed')),
         );

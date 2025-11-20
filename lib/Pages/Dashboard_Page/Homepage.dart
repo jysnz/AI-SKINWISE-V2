@@ -1,26 +1,95 @@
 import 'package:ai_skinwise_v2/Pages/History_Page/HistoryInterface.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../Scanner_Page/ScannerPage.dart';
 import '../Messages_Page/MessagesPage.dart';
 import 'DashboardContent.dart';
 
 class Homepage extends StatefulWidget {
-  const Homepage({super.key});
+  final String? email;
+
+  const Homepage({
+    super.key,
+    this.email,
+  });
 
   @override
   State<Homepage> createState() => _HomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
+class _HomepageState extends State<Homepage> with WidgetsBindingObserver {
   int _selectedIndex = 0;
 
-  static List<Widget> _widgetOptions = <Widget>[
-    DashboardContent(),
-    const Scannerpage(),
-    const Messagespage(),
-    const Historyinterface(),
-  ];
+  // Variables to hold user data
+  String _firstName = "Guest";
+  Map<String, dynamic>? _fullUserData; // <--- This will hold ALL user info
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+
+    // 1. Set Online Status
+    _updateOnlineStatus(true);
+
+    // 2. Fetch ALL User Data
+    _fetchUserData();
+  }
+
+  @override
+  void dispose() {
+    _updateOnlineStatus(false);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _updateOnlineStatus(true);
+    } else if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      _updateOnlineStatus(false);
+    }
+  }
+
+  // --- FETCH FULL USER DATA ---
+  Future<void> _fetchUserData() async {
+    if (widget.email == null) return;
+    try {
+      final data = await Supabase.instance.client
+          .from('UserInformation')
+          .select() // <--- Empty select() means "Select *" (Fetch All Columns)
+          .eq('email', widget.email!)
+          .maybeSingle();
+
+      if (data != null && mounted) {
+        setState(() {
+          _fullUserData = data; // Store the entire dictionary of data
+          _firstName = data['firstName'] ?? "Guest"; // Extract name for UI
+        });
+
+        // Debug: Print all data to console to prove it worked
+        print("✅ Full User Data Loaded: $_fullUserData");
+      }
+    } catch (e) {
+      print("❌ Error fetching user data: $e");
+    }
+  }
+
+  // --- ONLINE STATUS LOGIC ---
+  Future<void> _updateOnlineStatus(bool isOnline) async {
+    if (widget.email == null || widget.email!.isEmpty) return;
+
+    try {
+      await Supabase.instance.client
+          .from('UserInformation')
+          .update({'is_online': isOnline})
+          .eq('email', widget.email!);
+    } catch (e) {
+      print("Error updating online status: $e");
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -30,9 +99,9 @@ class _HomepageState extends State<Homepage> {
 
   Widget _buildActiveIcon(String assetName, String label, double width, double height) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
       decoration: BoxDecoration(
-        color: Color(0xFF005DA1),
+        color: const Color(0xFF005DA1),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Column(
@@ -45,10 +114,7 @@ class _HomepageState extends State<Homepage> {
           ),
           Text(
             label,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 12),
           ),
         ],
       ),
@@ -57,7 +123,7 @@ class _HomepageState extends State<Homepage> {
 
   Widget _buildInactiveIcon(String assetName, String label, double width, double height) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
       color: Colors.transparent,
       child: Column(
         children: [
@@ -65,15 +131,12 @@ class _HomepageState extends State<Homepage> {
             assetName,
             width: width,
             height: height,
-            color: Color(0xFF005DA1),
+            color: const Color(0xFF005DA1),
           ),
-          SizedBox(height: 2),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              color: Color(0xFF005DA1),
-              fontSize: 12,
-            ),
+            style: const TextStyle(color: Color(0xFF005DA1), fontSize: 12),
           ),
         ],
       ),
@@ -82,15 +145,27 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
+    // You can now pass _firstName to DashboardContent
+    final List<Widget> screens = [
+      DashboardContent(
+        firstName: _firstName,
+        userData: _fullUserData,
+        onRefresh: _fetchUserData, // <--- PASSING THE REFRESH FUNCTION HERE
+      ),
+      const Scannerpage(),
+      const Messagespage(),
+      const Historyinterface(),
+    ];
+
     return Scaffold(
       appBar: null,
       body: IndexedStack(
         index: _selectedIndex,
-        children: _widgetOptions,
+        children: screens,
       ),
 
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           color: Colors.white,
           border: Border(
             top: BorderSide(
@@ -103,10 +178,8 @@ class _HomepageState extends State<Homepage> {
           type: BottomNavigationBarType.fixed,
           showSelectedLabels: false,
           showUnselectedLabels: false,
-
           backgroundColor: Colors.transparent,
           elevation: 0,
-
           items: <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: _buildInactiveIcon('Icons/Home_Icon.png', 'Home', 20.5, 20),

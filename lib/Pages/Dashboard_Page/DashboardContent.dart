@@ -1,388 +1,349 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:math';
 import 'AccountPage.dart';
-import 'DiseaseDetailPage.dart';
+import 'DiseasesPage.dart';
 
 class DashboardContent extends StatefulWidget {
-  DashboardContent({Key? key}) : super(key: key);
+  final String firstName;
+  final Map<String, dynamic>? userData;
+  final VoidCallback onRefresh; // <--- NEW: Callback to refresh data
+
+  const DashboardContent({
+    super.key,
+    required this.firstName,
+    this.userData,
+    required this.onRefresh, // <--- Require it
+  });
 
   @override
   State<DashboardContent> createState() => _DashboardContentState();
 }
 
 class _DashboardContentState extends State<DashboardContent> {
-  // --- STATE VARIABLES ---
-  List<Map<String, dynamic>> _masterDiseaseList = [];
-  List<Map<String, dynamic>> _filteredDiseaseList = [];
-  bool _isLoading = true;
+  int waterGlasses = 0;
 
-  final List<String> _rarityOptions = ['All', 'Common', 'Uncommon', 'Rare', 'Very Rare'];
-  String _selectedRarity = 'All';
+  String _calculateBMI() {
+    if (widget.userData == null) return "--";
+    double height = double.tryParse(widget.userData!['Height'].toString()) ?? 0;
+    double weight = double.tryParse(widget.userData!['Weight'].toString()) ?? 0;
 
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
-  bool _isSearchActive = false;
+    if (height <= 0 || weight <= 0) return "N/A";
+    double heightInMeters = height / 100;
+    double bmi = weight / (heightInMeters * heightInMeters);
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchDiseasesFromDatabase();
-
-    _searchFocusNode.addListener(() {
-      setState(() {
-        _isSearchActive = _searchFocusNode.hasFocus;
-      });
-    });
-
-    _searchController.addListener(() {
-      _filterList();
-    });
+    return bmi.toStringAsFixed(1);
   }
 
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    super.dispose();
+  String _getTimeBasedGreeting() {
+    var hour = DateTime.now().hour;
+    if (hour < 12) return "Good Morning";
+    if (hour < 17) return "Good Afternoon";
+    return "Good Evening";
   }
 
-  // --- FETCH DATA FROM SUPABASE ---
-  Future<void> _fetchDiseasesFromDatabase() async {
-    try {
-      debugPrint('Attempting to fetch from table: skinDiseases...');
-
-      // Selects all columns from the table
-      final response = await Supabase.instance.client
-          .from('SkinDiseases')
-          .select();
-
-      debugPrint('Raw Supabase Response: $response');
-
-      final List<Map<String, dynamic>> formattedData = (response as List).map((item) {
-        return {
-          // MAPPING: Database Column -> App Variable
-          'name': item['disease_name'] ?? 'Unknown Name',
-          'rarity': item['rarity'] ?? 'Unknown',
-          'image': item['image_sample_url'] ?? '', // Gets the URL
-          'description': item['description'] ?? 'No description available.',
-          'symptoms': item['symptoms'] ?? '',
-          'remedies': item['remedies'] ?? '',
-          'references': item['references'] ?? '',
-        };
-      }).toList();
-
-      if (mounted) {
-        setState(() {
-          _masterDiseaseList = formattedData;
-          _filteredDiseaseList = formattedData;
-          _isLoading = false;
-        });
-        debugPrint('Data loaded successfully: ${_masterDiseaseList.length} items.');
-      }
-    } catch (e) {
-      debugPrint('CRITICAL ERROR fetching data: $e');
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  void _filterList() {
-    final String query = _searchController.text.toLowerCase();
-
-    List<Map<String, dynamic>> filteredList = _masterDiseaseList;
-
-    if (_selectedRarity != 'All') {
-      filteredList = filteredList.where((disease) {
-        return disease['rarity'].toString().toLowerCase() == _selectedRarity.toLowerCase();
-      }).toList();
-    }
-
-    if (query.isNotEmpty) {
-      filteredList = filteredList.where((disease) {
-        return disease['name'].toString().toLowerCase().contains(query);
-      }).toList();
-    }
-
-    setState(() {
-      _filteredDiseaseList = filteredList;
-    });
-  }
+  final List<String> _skinTips = [
+    "Drink at least 8 glasses of water for glowing skin.",
+    "Always wear sunscreen, even on cloudy days!",
+    "Wash your pillowcases weekly to prevent acne.",
+    "Vitamin C serum helps brighten skin tone.",
+    "Moisturize immediately after showering to lock in hydration."
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Custom Header
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AccountPage()),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+    String greeting = _getTimeBasedGreeting();
+    String bmi = _calculateBMI();
+    String dailyTip = _skinTips[DateTime.now().day % _skinTips.length];
+
+    // Extract profile image URL directly from the passed userData
+    String? profileImageUrl = widget.userData?['profile_image'];
+    bool hasProfileImage = profileImageUrl != null && profileImageUrl.isNotEmpty;
+
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 1. HEADER SECTION
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "$greeting,",
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                      Text(
+                        widget.firstName.toUpperCase(),
+                        style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF005DA1)),
+                      ),
+                    ],
+                  ),
+
+                  // WRAPPED CIRCLE AVATAR
+                  GestureDetector(
+                    onTap: () async {
+                      // Navigate to Account Page and WAIT for it to return
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AccountPage(userData: widget.userData),
+                        ),
+                      );
+
+                      // When we come back, trigger the refresh!
+                      widget.onRefresh();
+                    },
+                    child: CircleAvatar(
+                      radius: 25,
+                      backgroundColor: const Color(0xFF005DA1),
+                      backgroundImage: hasProfileImage
+                          ? NetworkImage(profileImageUrl!)
+                          : null,
+                      child: hasProfileImage
+                          ? null
+                          : Text(
+                        widget.firstName.isNotEmpty
+                            ? widget.firstName[0].toUpperCase()
+                            : "U",
+                        style: const TextStyle(
+                            color: Colors.white, fontSize: 20),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 25),
+
+              // 2. HEALTH SUMMARY CARD (BMI)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF005DA1), Color(0xFF0083E0)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                        color: Colors.blue.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5))
+                  ],
+                ),
                 child: Row(
                   children: [
-                    Icon(Icons.account_circle_outlined, size: 50, color: Color(0xFF005DA1)),
-                    const SizedBox(width: 12),
-                    const Text(
-                      'Guest',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Health Overview",
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 14)),
+                        const SizedBox(height: 5),
+                        Text("BMI Score: $bmi",
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 5),
+                        const Text("Based on your profile data",
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.favorite, color: Colors.white, size: 40),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 25),
+
+              // 3. QUICK ACTIONS (Updated with Diseases Button)
+              const Text("Quick Actions",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 15),
+              Row(
+                children: [
+                  // New Scan Button
+                  Expanded(
+                    child: _buildActionCard(
+                      icon: Icons.camera_alt_outlined,
+                      title: "New Scan",
+                      color: Colors.orange.shade50,
+                      iconColor: Colors.orange,
+                      onTap: () {
+                        print("Go to scanner");
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+
+                  // Diseases Covered Button (NEW)
+                  Expanded(
+                    child: _buildActionCard(
+                      icon: Icons.medical_services_outlined,
+                      title: "Diseases",
+                      color: Colors.blue.shade50,
+                      iconColor: Colors.blue,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const SkinDiseasesPage(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(width: 10),
+
+                  // History Button
+                  Expanded(
+                    child: _buildActionCard(
+                      icon: Icons.history,
+                      title: "History",
+                      color: Colors.purple.shade50,
+                      iconColor: Colors.purple,
+                      onTap: () {
+                        print("Go to history");
+                      },
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 25),
+
+              // 4. HYDRATION TRACKER
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.grey.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text("Skin Hydration",
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text("$waterGlasses / 8 Cups",
+                            style: const TextStyle(
+                                color: Color(0xFF005DA1),
+                                fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                    const SizedBox(height: 15),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: List.generate(8, (index) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (index < waterGlasses) {
+                                waterGlasses = index;
+                              } else {
+                                waterGlasses = index + 1;
+                              }
+                            });
+                          },
+                          child: Icon(
+                            index < waterGlasses
+                                ? Icons.water_drop
+                                : Icons.water_drop_outlined,
+                            color: index < waterGlasses
+                                ? Colors.blue
+                                : Colors.grey[300],
+                            size: 30,
+                          ),
+                        );
+                      }),
                     ),
                   ],
                 ),
               ),
-            ),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Divider(thickness: 1, height: 1, color: Colors.grey[300]),
-            ),
+              const SizedBox(height: 25),
 
-            // 2. Search Bar
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 20.0),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(12.0)),
-                child: TextField(
-                  controller: _searchController,
-                  focusNode: _searchFocusNode,
-                  decoration: InputDecoration(
-                    hintText: 'Search',
-                    prefixIcon: const Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(
-                        color: _isSearchActive ? Color(0xFF005DA1) : Colors.transparent,
-                        width: 1.5,
-                      ),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(color: Colors.grey[300]!, width: 1.0),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12.0),
-                      borderSide: BorderSide(color: Color(0xFF005DA1), width: 2.0),
-                    ),
-                    filled: true,
-                    fillColor: Colors.grey[100],
-                  ),
+              // 5. DAILY TIP
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEDF7FF),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ),
-            ),
-
-            // 3. Filter Dropdown
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 10.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Discovered Skin Diseases',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  PopupMenuButton<String>(
-                    offset: const Offset(0, 30),
-                    constraints: const BoxConstraints(minWidth: 160),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Rarity',
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb,
+                            color: Colors.orange[700], size: 20),
+                        const SizedBox(width: 8),
+                        Text("Daily Skin Tip",
                             style: TextStyle(
-                              color: Colors.orange[700],
-                              fontSize: 18,
-                              fontWeight: FontWeight.normal,
-                            ),
-                          ),
-                          Icon(Icons.arrow_drop_down, color: Colors.orange[700]),
-                        ],
-                      ),
+                                color: Colors.orange[800],
+                                fontWeight: FontWeight.bold)),
+                      ],
                     ),
-                    onSelected: (String newValue) {
-                      setState(() {
-                        _selectedRarity = newValue;
-                      });
-                      _filterList();
-                    },
-                    color: const Color(0xFF005DA1),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    itemBuilder: (BuildContext context) {
-                      return _rarityOptions.map((String value) {
-                        bool isSelected = (_selectedRarity == value);
-                        return PopupMenuItem<String>(
-                          value: value,
-                          padding: EdgeInsets.zero,
-                          child: Container(
-                            width: double.infinity,
-                            margin: EdgeInsets.symmetric(horizontal: isSelected ? 8.0 : 0.0),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: isSelected ? Colors.white : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            child: Text(
-                              value,
-                              style: TextStyle(
-                                color: isSelected ? Color(0xFF005DA1) : Colors.white,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList();
-                    },
-                  ),
-                ],
-              ),
-            ),
-
-            // 4. List View
-            Container(
-              child: _isLoading
-                  ? const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(32.0),
-                  child: CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    Text(
+                      dailyTip,
+                      style: TextStyle(
+                          color: Colors.grey[800], fontSize: 14, height: 1.4),
+                    ),
+                  ],
                 ),
-              )
-                  : _filteredDiseaseList.isEmpty
-                  ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    children: const [
-                      Icon(Icons.inbox, size: 40, color: Colors.grey),
-                      SizedBox(height: 10),
-                      Text('No diseases found or Database Empty.'),
-                    ],
-                  ),
-                ),
-              )
-                  : ListView.builder(
-                itemCount: _filteredDiseaseList.length,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final disease = _filteredDiseaseList[index];
-                  return DiseaseCard(
-                    name: disease['name'],
-                    rarity: disease['rarity'],
-                    imageUrl: disease['image'],
-                    fullData: disease,
-                  );
-                },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
-}
 
-// --- REUSABLE CARD WIDGET ---
-class DiseaseCard extends StatelessWidget {
-  final String name;
-  final String rarity;
-  final String imageUrl;
-  final Map<String, dynamic> fullData;
-
-  const DiseaseCard({
-    Key? key,
-    required this.name,
-    required this.rarity,
-    required this.imageUrl,
-    required this.fullData,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+  Widget _buildActionCard(
+      {required IconData icon,
+        required String title,
+        required Color color,
+        required Color iconColor,
+        required VoidCallback onTap}) {
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(12.0),
+        padding: const EdgeInsets.symmetric(vertical: 15),
         decoration: BoxDecoration(
-          color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12.0),
+          color: color,
+          borderRadius: BorderRadius.circular(15),
         ),
-        child: Row(
+        child: Column(
           children: [
-            // --- IMAGE DISPLAY ---
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: const Color(0xFF005DA1),
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              clipBehavior: Clip.hardEdge,
-              child: imageUrl.isNotEmpty
-                  ? Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return const Icon(Icons.broken_image, color: Colors.white);
-                },
-              )
-                  : const Icon(Icons.medical_services, color: Colors.white),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    rarity,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                // Navigate to Detail Page
-                // NOTE: Ensure your DiseaseDetailPage constructor accepts these arguments!
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DiseaseDetailPage(
-                      name: name,
-                      rarity: rarity,
-                      // Uncomment these if your Detail page accepts them:
-                      // description: fullData['description'],
-                      // imageUrl: imageUrl,
-                    ),
-                  ),
-                );
-              },
-              child: const Text(
-                'View more',
-                style: TextStyle(color: Color(0xFF005DA1)),
-              ),
-            ),
+            Icon(icon, color: iconColor, size: 28),
+            const SizedBox(height: 8),
+            Text(title,
+                style: TextStyle(
+                    color: iconColor,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13)),
           ],
         ),
       ),
