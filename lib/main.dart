@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'Pages/Dashboard_Page/Homepage.dart';
 import 'Pages/Scanner_Page/DetectionInformation.dart';
 import 'Pages/Scanner_Page/CameraScanner.dart';
+import 'Pages/StartPage.dart';
 import 'Supabase/supabase_config.dart';
 import 'Supabase/user_data_service.dart';
 
@@ -58,7 +59,7 @@ class MyApp extends StatelessWidget {
         ),
       ),
       // The home is now the Detectioninformation page
-      home: const Login(),
+      home: const Startpage(),
       // We can also define routes for navigation
       routes: {
         '/scanner': (context) => const Camerascanner(),

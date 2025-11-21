@@ -61,7 +61,7 @@ class _LoginState extends State<Login> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const Homepage()),
+          MaterialPageRoute(builder: (_) => Homepage(email: email,)),
         );
       }
     } on AuthException catch (e) {
@@ -315,7 +315,7 @@ class _LoginState extends State<Login> {
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                        builder: (context) => const Homepage()
+                        builder: (context) => Homepage(email: emailController.text)
                     ),
                   );
                 },
